@@ -34,7 +34,7 @@ npm -v
 
 ```bash
 # 1. Clona el repositorio
-git clone https://github.com/Angel-crypt/parkaccess-frontend.git
+git clone https://github.com/Angel-crypt/gateflow-frontend.git
 
 # 2. Entra a la carpeta
 cd parkaccess-frontend
