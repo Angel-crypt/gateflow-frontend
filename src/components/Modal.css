@@ -33,6 +33,7 @@
   background: none;
   border: none;
   cursor: pointer;
+  outline: none;
   font-size: 1.25rem;
   color: var(--color-text-muted);
   line-height: 1;
@@ -41,6 +42,7 @@
   transition: color 0.15s, background-color 0.15s;
 }
 .modal__close:hover { color: var(--color-text); background-color: var(--color-bg); }
+.modal__close:focus-visible { box-shadow: 0 0 0 2px var(--color-primary); }
 .modal__body {
   padding: var(--space-6);
   display: flex;
