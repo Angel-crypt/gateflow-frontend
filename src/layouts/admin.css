@@ -1,3 +1,4 @@
+/* ─── Layout shell ───────────────────────────────────────── */
 .admin-layout {
   display: flex;
   min-height: 100vh;
@@ -13,37 +14,86 @@
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
+  transition: width 0.22s ease;
 }
+.sidebar-collapsed .sidebar { width: 64px; }
+
+/* Brand */
 .sidebar__brand {
-  padding: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  min-height: 64px;
 }
+.sidebar-collapsed .sidebar__brand {
+  justify-content: center;
+  padding: var(--space-4) var(--space-3);
+}
+.sidebar__brand-text { overflow: hidden; }
 .sidebar__brand-name {
-  font-size: 1.25rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #fff;
-  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 .sidebar__brand-sub {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.3);
   margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
+
+/* Collapse button */
+.sidebar__collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  transition: background-color 0.15s, color 0.15s;
+  outline: none;
+}
+.sidebar__collapse-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+.sidebar__collapse-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+/* Nav */
 .sidebar__nav {
   flex: 1;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-2);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
+.sidebar__section { margin-bottom: var(--space-2); }
 .sidebar__nav-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.3);
-  padding: var(--space-3) var(--space-3) var(--space-1);
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.25);
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  white-space: nowrap;
 }
 .sidebar__link {
   display: flex;
@@ -51,11 +101,14 @@
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
+  white-space: nowrap;
   transition: background-color 0.15s, color 0.15s;
+  min-height: 36px;
+  outline: none;
 }
 .sidebar__link:hover {
   background-color: rgba(255, 255, 255, 0.07);
@@ -65,29 +118,41 @@
   background-color: var(--color-primary);
   color: #fff;
 }
-.sidebar__link-icon {
-  font-size: 1rem;
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
+.sidebar__link:focus-visible { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4); }
+.sidebar__link-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Collapsed nav */
+.sidebar-collapsed .sidebar__link {
+  justify-content: center;
+  padding: var(--space-2);
+  gap: 0;
 }
+
+/* User info */
 .sidebar__user {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.sidebar-collapsed .sidebar__user {
+  justify-content: center;
+  padding: var(--space-3);
 }
 .sidebar__avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   background-color: var(--color-primary);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8125rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -100,11 +165,45 @@
   text-overflow: ellipsis;
 }
 .sidebar__user-role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ─── Main ───────────────────────────────────────────────── */
+/* Logout button */
+.sidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  outline: none;
+}
+.sidebar__logout:hover {
+  background-color: rgba(220, 38, 38, 0.15);
+  color: #fca5a5;
+}
+.sidebar__logout:focus-visible { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4); }
+.sidebar-collapsed .sidebar__logout {
+  justify-content: center;
+  gap: 0;
+  padding: var(--space-3);
+}
+
+/* ─── Main area ──────────────────────────────────────────── */
 .admin-main {
   flex: 1;
   display: flex;
@@ -115,19 +214,19 @@
 
 /* ─── Navbar ─────────────────────────────────────────────── */
 .navbar {
-  height: 56px;
+  height: 52px;
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-6);
+  padding: 0 var(--space-5);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 .navbar__title {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -146,7 +245,7 @@
 
 /* ─── Footer ─────────────────────────────────────────────── */
 .admin-footer {
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-5);
   border-top: 1px solid var(--color-border);
   background-color: var(--color-surface);
   display: flex;
