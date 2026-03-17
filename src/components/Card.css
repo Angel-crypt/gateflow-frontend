@@ -1,0 +1,50 @@
+/* ─── Card ───────────────────────────────────────────────── */
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.card--padded  { padding: var(--space-6); }
+.card--compact { padding: var(--space-4); }
+.card--flat    { box-shadow: none; }
+.card--hover   { cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+.card--hover:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+/* ─── StatCard ───────────────────────────────────────────── */
+.stat-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.stat-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.375rem;
+  flex-shrink: 0;
+}
+.stat-card__icon--primary { background-color: var(--color-primary-light); color: var(--color-primary); }
+.stat-card__icon--success { background-color: var(--color-success-light); color: var(--color-success); }
+.stat-card__icon--danger  { background-color: var(--color-danger-light);  color: var(--color-danger);  }
+.stat-card__icon--warning { background-color: var(--color-warning-light); color: var(--color-warning); }
+
+.stat-card__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+.stat-card__label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}

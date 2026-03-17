@@ -1,3 +1,5 @@
+import "./Card.css";
+
 /**
  * Card — contenedor base de superficie.
  *

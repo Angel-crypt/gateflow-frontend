@@ -1,3 +1,5 @@
+import "./Form.css";
+
 export function Input({ label, error, hint, id, ...props }) {
   return (
     <div className="field">

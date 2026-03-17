@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import "./Modal.css";
 
 export function Modal({ title, onClose, children, footer }) {
   // Cierra con Escape

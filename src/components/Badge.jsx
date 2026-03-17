@@ -1,3 +1,5 @@
+import "./Badge.css";
+
 /**
  * Badge — etiqueta de estado o rol.
  *

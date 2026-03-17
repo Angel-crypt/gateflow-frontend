@@ -1,3 +1,4 @@
+import "./Table.css";
 import { Spinner } from "./Spinner";
 
 /**

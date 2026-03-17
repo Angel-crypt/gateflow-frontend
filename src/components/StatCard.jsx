@@ -1,3 +1,5 @@
+import "./Card.css";
+
 /**
  * StatCard — tarjeta de métrica para dashboards.
  *

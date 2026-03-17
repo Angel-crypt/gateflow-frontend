@@ -1,3 +1,5 @@
+import "./Form.css";
+
 export function Select({ label, error, hint, id, options = [], placeholder, ...props }) {
   return (
     <div className="field">
