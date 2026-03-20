@@ -2,8 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { ProtectedRoute } from "./router/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
+import GuardLayout from "./layouts/GuardLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
+import AccessListPage from "./pages/guard/AccessListPage";
+import ValidateQRPage from "./pages/guard/ValidateQRPage";
+import ManualAccessPage from "./pages/guard/ManualAccessPage";
 
 export default function App() {
   return (
@@ -26,7 +30,11 @@ export default function App() {
 
           {/* Guard — permisos: access-logs, validate */}
           <Route element={<ProtectedRoute roles={["guard"]} />}>
-            <Route path="/guard" element={<div>Guard home</div>} />
+            <Route element={<GuardLayout />}>
+              <Route path="/guard"          element={<AccessListPage />} />
+              <Route path="/guard/validar"  element={<ValidateQRPage />} />
+              <Route path="/guard/manual"   element={<ManualAccessPage />} />
+            </Route>
           </Route>
 
           {/* Tenant — permisos: passes (propios), destinations (propias) */}
