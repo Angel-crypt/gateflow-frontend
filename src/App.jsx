@@ -3,11 +3,13 @@ import { AuthProvider } from "./auth/AuthContext";
 import { ProtectedRoute } from "./router/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import GuardLayout from "./layouts/GuardLayout";
+import TenantLayout from "./layouts/TenantLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import AccessListPage from "./pages/guard/AccessListPage";
 import ValidateQRPage from "./pages/guard/ValidateQRPage";
 import ManualAccessPage from "./pages/guard/ManualAccessPage";
+import PassesPage from "./pages/tenant/PassesPage";
 
 export default function App() {
   return (
@@ -39,7 +41,9 @@ export default function App() {
 
           {/* Tenant — permisos: passes (propios), destinations (propias) */}
           <Route element={<ProtectedRoute roles={["tenant"]} />}>
-            <Route path="/tenant" element={<div>Tenant home</div>} />
+            <Route element={<TenantLayout />}>
+              <Route path="/tenant" element={<PassesPage />} />
+            </Route>
           </Route>
 
           {/* Fallback */}
