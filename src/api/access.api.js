@@ -8,3 +8,6 @@ export const getAccessLog = (id) =>
 
 export const createAccessLog = (data) =>
   apiClient.post("/access/create/", data);
+
+export const registerExit = (id) =>
+  apiClient.patch(`/access/${id}/`, { status: "closed" });
