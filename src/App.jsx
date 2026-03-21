@@ -6,6 +6,8 @@ import GuardLayout from "./layouts/GuardLayout";
 import TenantLayout from "./layouts/TenantLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
+import PasesPage from "./pages/admin/PasesPage";
+import AccesosPage from "./pages/admin/AccesosPage";
 import AccessListPage from "./pages/guard/AccessListPage";
 import ValidateQRPage from "./pages/guard/ValidateQRPage";
 import ManualAccessPage from "./pages/guard/ManualAccessPage";
@@ -25,8 +27,8 @@ export default function App() {
               <Route path="/admin"           element={<DashboardPage />} />
               <Route path="/admin/usuarios"  element={<div style={placeholderStyle}>Usuarios — próximamente</div>} />
               <Route path="/admin/destinos"  element={<div style={placeholderStyle}>Destinos — próximamente</div>} />
-              <Route path="/admin/pases"     element={<div style={placeholderStyle}>Pases — próximamente</div>} />
-              <Route path="/admin/accesos"   element={<div style={placeholderStyle}>Accesos — próximamente</div>} />
+              <Route path="/admin/pases"     element={<PasesPage />} />
+              <Route path="/admin/accesos"   element={<AccesosPage />} />
             </Route>
           </Route>
 
