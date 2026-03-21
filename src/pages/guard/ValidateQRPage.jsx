@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { validatePass } from "../../api/passes.api";
 
 export default function ValidateQRPage() {
+  const queryClient = useQueryClient();
   const [qrCode, setQrCode] = useState("");
   const [result, setResult] = useState(null);
 
@@ -16,6 +17,12 @@ export default function ValidateQRPage() {
   const handleValidate = () => {
     setResult(null);
     mutation.mutate();
+  };
+
+  const handleConfirm = () => {
+    queryClient.invalidateQueries(["access-logs"]);
+    setQrCode("");
+    setResult(null);
   };
 
   return (
@@ -122,7 +129,7 @@ export default function ValidateQRPage() {
             </div>
           ))}
           <button
-            onClick={() => setQrCode("") || setResult(null)}
+            onClick={handleConfirm}
             style={{
               width: "100%", marginTop: "12px", padding: "11px",
               background: "#16a34a", color: "#fff", border: "none",
