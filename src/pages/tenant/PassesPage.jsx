@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getPasses, deletePass } from "../../api/passes.api";
+import { getPasses, deletePass, updatePass } from "../../api/passes.api";
 import { Spinner } from "../../components/Spinner";
 import CreatePassModal from "./CreatePassModal";
 import QRModal from "./QRModal";
 
-function PassCard({ pass, onViewQR, onDelete }) {
+function PassCard({ pass, onViewQR, onDelete, onToggleActive }) {
   const isUsed = pass.is_used;
   const isInactive = !pass.is_active;
   const isExpired = new Date(pass.valid_to) < new Date();
+  const canToggle = !isUsed && !isExpired; // puede activar/desactivar si no está usado ni expirado
 
   const badgeStyle =
     isUsed || isInactive || isExpired
@@ -27,7 +28,7 @@ function PassCard({ pass, onViewQR, onDelete }) {
         border: "0.5px solid var(--color-border)",
         borderRadius: "10px",
         padding: "12px 14px",
-        opacity: isUsed || isInactive || isExpired ? 0.6 : 1,
+        opacity: isUsed || isExpired ? 0.6 : 1,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
@@ -51,18 +52,36 @@ function PassCard({ pass, onViewQR, onDelete }) {
         {" — "}
         {new Date(pass.valid_to).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}
       </div>
-      {!isUsed && !isInactive && !isExpired && (
+      {!isUsed && !isExpired && (
         <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-          <button
-            onClick={() => onViewQR(pass)}
-            style={{
-              flex: 1, padding: "7px", background: "#0369a1",
-              color: "#fff", border: "none", borderRadius: "7px",
-              fontSize: "12px", fontWeight: 500, cursor: "pointer",
-            }}
-          >
-            Ver QR
-          </button>
+          {!isInactive && (
+            <button
+              onClick={() => onViewQR(pass)}
+              style={{
+                flex: 1, padding: "7px", background: "#0369a1",
+                color: "#fff", border: "none", borderRadius: "7px",
+                fontSize: "12px", fontWeight: 500, cursor: "pointer",
+              }}
+            >
+              Ver QR
+            </button>
+          )}
+          {canToggle && (
+            <button
+              onClick={() => onToggleActive(pass)}
+              style={{
+                flex: isInactive ? 1 : 0,
+                padding: "7px 12px",
+                background: isInactive ? "#0369a1" : "var(--color-surface)",
+                color: isInactive ? "#fff" : "#64748b",
+                border: isInactive ? "none" : "0.5px solid var(--color-border)",
+                borderRadius: "7px", fontSize: "12px", cursor: "pointer",
+                fontWeight: isInactive ? 500 : 400,
+              }}
+            >
+              {isInactive ? "Activar" : "Desactivar"}
+            </button>
+          )}
           <button
             onClick={() => onDelete(pass.id)}
             style={{
@@ -97,6 +116,11 @@ export default function PassesPage() {
     onSuccess: () => queryClient.invalidateQueries(["passes"]),
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: (pass) => updatePass(pass.id, { is_active: !pass.is_active }),
+    onSuccess: () => queryClient.invalidateQueries(["passes"]),
+  });
+
   if (isLoading) return <Spinner />;
 
   return (
@@ -124,6 +148,7 @@ export default function PassesPage() {
           pass={pass}
           onViewQR={setSelectedPass}
           onDelete={(id) => deleteMutation.mutate(id)}
+          onToggleActive={(p) => toggleActiveMutation.mutate(p)}
         />
       ))}
 
