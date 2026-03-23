@@ -61,7 +61,8 @@ export default function ValidateQRPage() {
         <input
           value={qrCode}
           onChange={(e) => setQrCode(e.target.value)}
-          placeholder="xxxxxxxx-xxxx-xxxx-xxxx"
+          placeholder="ID del pase (ej. 42)"
+          type="number"
           style={{
             width: "100%",
             padding: "9px 12px",
