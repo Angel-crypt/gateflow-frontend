@@ -13,14 +13,58 @@ function useDestinations() {
   });
 }
 
+// Formato YYYY-MM-DDTHH:mm para datetime-local
+function toLocalISO(date) {
+  const d = new Date(date);
+  d.setSeconds(0, 0);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function addHours(isoStr, hours) {
+  const d = new Date(isoStr);
+  d.setMinutes(d.getMinutes() + hours * 60);
+  return toLocalISO(d);
+}
+
+const nowISO = () => toLocalISO(new Date());
+
+const DURATIONS = [
+  { key: "1h",     label: "1h",           hours: 1  },
+  { key: "2h",     label: "2h",           hours: 2  },
+  { key: "4h",     label: "4h",           hours: 4  },
+  { key: "8h",     label: "8h",           hours: 8  },
+  { key: "1d",     label: "1 día",        hours: 24 },
+  { key: "custom", label: "Personalizado", hours: null },
+];
+
+const PILL_ACTIVE   = { padding: "5px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 500, cursor: "pointer", border: "1px solid #0369a1", background: "#0369a1", color: "#fff",                        transition: "all 150ms" };
+const PILL_INACTIVE = { padding: "5px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 500, cursor: "pointer", border: "0.5px solid var(--color-border)", background: "var(--color-bg)", color: "var(--color-text-muted)", transition: "all 150ms" };
+
+const INPUT_STYLE = {
+  padding: "9px 10px",
+  border: "0.5px solid var(--color-border)",
+  borderRadius: "7px",
+  fontSize: "13px",
+  background: "var(--color-surface)",
+  color: "var(--color-text)",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
 export default function CreatePassModal({ onClose, onSuccess }) {
   const { data: destinations = [] } = useDestinations();
+
+  const [fromMode, setFromMode] = useState("now");
+  const [duration, setDuration] = useState("1h");
+
+  const initialNow = nowISO();
   const [form, setForm] = useState({
     visitor_name: "",
     plate: "",
     pass_type: "day",
-    valid_from: "",
-    valid_to: "",
+    valid_from: initialNow,
+    valid_to: addHours(initialNow, 1),
     destination: "",
   });
 
@@ -32,8 +76,48 @@ export default function CreatePassModal({ onClose, onSuccess }) {
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const isValid =
-    form.visitor_name && form.plate && form.valid_from && form.valid_to;
+  // Cambiar modo "Desde"
+  const handleFromMode = (mode) => {
+    setFromMode(mode);
+    if (mode === "now") {
+      const now = nowISO();
+      const durDef = DURATIONS.find((d) => d.key === duration);
+      setForm((f) => ({
+        ...f,
+        valid_from: now,
+        valid_to: durDef?.hours ? addHours(now, durDef.hours) : f.valid_to,
+      }));
+    } else {
+      setForm((f) => ({ ...f, valid_from: "" }));
+    }
+  };
+
+  // Cambiar duración
+  const handleDuration = (key) => {
+    setDuration(key);
+    const durDef = DURATIONS.find((d) => d.key === key);
+    if (key !== "custom" && form.valid_from) {
+      setForm((f) => ({ ...f, valid_to: addHours(f.valid_from, durDef.hours) }));
+    } else if (key === "custom") {
+      setForm((f) => ({ ...f, valid_to: "" }));
+    }
+  };
+
+  // Cambiar valid_from en modo personalizado
+  const handleValidFromChange = (e) => {
+    const newFrom = e.target.value;
+    const durDef = DURATIONS.find((d) => d.key === duration);
+    setForm((f) => ({
+      ...f,
+      valid_from: newFrom,
+      valid_to: durDef?.hours && newFrom ? addHours(newFrom, durDef.hours) : f.valid_to,
+    }));
+  };
+
+  const isValid = form.visitor_name && form.plate && form.valid_from && form.valid_to;
+
+  const formatDisplay = (iso) =>
+    iso ? new Date(iso).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—";
 
   return (
     <div
@@ -55,13 +139,15 @@ export default function CreatePassModal({ onClose, onSuccess }) {
           display: "flex",
           flexDirection: "column",
           gap: "12px",
+          maxHeight: "92vh",
+          overflowY: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
-        <div style={{ width: "32px", height: "3px", background: "var(--color-border)", borderRadius: "2px", margin: "0 auto" }} />
+        <div style={{ width: "32px", height: "3px", background: "var(--color-border)", borderRadius: "2px", margin: "0 auto", flexShrink: 0 }} />
 
-        <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text)" }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text)" }}>
           Nuevo pase
         </div>
 
@@ -75,11 +161,7 @@ export default function CreatePassModal({ onClose, onSuccess }) {
             value={form.visitor_name}
             onChange={handleChange}
             placeholder="Ej. Juan García"
-            style={{
-              padding: "9px 10px", border: "0.5px solid var(--color-border)",
-              borderRadius: "7px", fontSize: "13px",
-              background: "var(--color-surface)", color: "var(--color-text)",
-            }}
+            style={INPUT_STYLE}
           />
         </div>
 
@@ -93,12 +175,7 @@ export default function CreatePassModal({ onClose, onSuccess }) {
             value={form.plate}
             onChange={handleChange}
             placeholder="ABC-123"
-            style={{
-              padding: "9px 10px", border: "0.5px solid var(--color-border)",
-              borderRadius: "7px", fontSize: "13px",
-              fontFamily: "monospace", letterSpacing: "1px",
-              background: "var(--color-surface)", color: "var(--color-text)",
-            }}
+            style={{ ...INPUT_STYLE, fontFamily: "monospace", letterSpacing: "1px" }}
           />
         </div>
 
@@ -111,11 +188,7 @@ export default function CreatePassModal({ onClose, onSuccess }) {
             name="pass_type"
             value={form.pass_type}
             onChange={handleChange}
-            style={{
-              padding: "9px 10px", border: "0.5px solid var(--color-border)",
-              borderRadius: "7px", fontSize: "13px",
-              background: "var(--color-surface)", color: "var(--color-text)",
-            }}
+            style={INPUT_STYLE}
           >
             <option value="day">Day Pass — múltiples entradas</option>
             <option value="single">Single Use — una sola entrada</option>
@@ -132,11 +205,7 @@ export default function CreatePassModal({ onClose, onSuccess }) {
               name="destination"
               value={form.destination}
               onChange={handleChange}
-              style={{
-                padding: "9px 10px", border: "0.5px solid var(--color-border)",
-                borderRadius: "7px", fontSize: "13px",
-                background: "var(--color-surface)", color: "var(--color-text)",
-              }}
+              style={INPUT_STYLE}
             >
               <option value="">Seleccionar destino...</option>
               {destinations.map((d) => (
@@ -146,40 +215,95 @@ export default function CreatePassModal({ onClose, onSuccess }) {
           </div>
         )}
 
-        {/* Fechas */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
-              Desde
-            </label>
+        {/* ── Separador ── */}
+        <div style={{ height: "0.5px", background: "var(--color-border)" }} />
+
+        {/* ── Desde ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
+              Válido desde
+            </span>
+            <div style={{ display: "flex", gap: "5px" }}>
+              {["now", "custom"].map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => handleFromMode(mode)}
+                  style={fromMode === mode ? PILL_ACTIVE : PILL_INACTIVE}
+                >
+                  {mode === "now" ? "Ahora" : "Personalizado"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {fromMode === "now" ? (
+            <div style={{
+              padding: "9px 10px",
+              background: "var(--color-bg)",
+              border: "0.5px solid var(--color-border)",
+              borderRadius: "7px",
+              fontSize: "13px",
+              color: "var(--color-text)",
+              fontFamily: "monospace",
+            }}>
+              {formatDisplay(form.valid_from)}
+            </div>
+          ) : (
             <input
               type="datetime-local"
-              name="valid_from"
               value={form.valid_from}
-              onChange={handleChange}
-              style={{
-                padding: "9px 10px", border: "0.5px solid var(--color-border)",
-                borderRadius: "7px", fontSize: "12px",
-                background: "var(--color-surface)", color: "var(--color-text)",
-              }}
+              onChange={handleValidFromChange}
+              style={{ ...INPUT_STYLE, fontSize: "12px" }}
             />
+          )}
+        </div>
+
+        {/* ── Duración ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <span style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
+            Duración
+          </span>
+
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+            {DURATIONS.map((d) => (
+              <button
+                key={d.key}
+                onClick={() => handleDuration(d.key)}
+                style={duration === d.key ? PILL_ACTIVE : PILL_INACTIVE}
+              >
+                {d.label}
+              </button>
+            ))}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
-              Hasta
-            </label>
+
+          {duration === "custom" ? (
             <input
               type="datetime-local"
-              name="valid_to"
               value={form.valid_to}
-              onChange={handleChange}
-              style={{
-                padding: "9px 10px", border: "0.5px solid var(--color-border)",
-                borderRadius: "7px", fontSize: "12px",
-                background: "var(--color-surface)", color: "var(--color-text)",
-              }}
+              min={form.valid_from || undefined}
+              onChange={(e) => setForm((f) => ({ ...f, valid_to: e.target.value }))}
+              style={{ ...INPUT_STYLE, fontSize: "12px" }}
             />
-          </div>
+          ) : (
+            form.valid_from && form.valid_to && (
+              <div style={{
+                fontSize: "12px",
+                color: "var(--color-text-muted)",
+                padding: "8px 10px",
+                background: "var(--color-bg)",
+                borderRadius: "7px",
+                border: "0.5px solid var(--color-border)",
+                display: "flex",
+                justifyContent: "space-between",
+              }}>
+                <span>Hasta</span>
+                <span style={{ fontFamily: "monospace", color: "var(--color-text)", fontWeight: 500 }}>
+                  {formatDisplay(form.valid_to)}
+                </span>
+              </div>
+            )
+          )}
         </div>
 
         {/* Error */}
