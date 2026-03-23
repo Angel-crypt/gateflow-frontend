@@ -6,18 +6,19 @@ import CreatePassModal from "./CreatePassModal";
 import QRModal from "./QRModal";
 
 function PassCard({ pass, onViewQR, onDelete }) {
+  const isUsed = pass.is_used;
   const isInactive = !pass.is_active;
   const isExpired = new Date(pass.valid_to) < new Date();
 
   const badgeStyle =
-    isInactive || isExpired
+    isUsed || isInactive || isExpired
       ? { background: "#f1f5f9", color: "#64748b" }
       : pass.pass_type === "day"
       ? { background: "#e0f2fe", color: "#0369a1" }
       : { background: "#fef3c7", color: "#b45309" };
 
   const badgeLabel =
-    isInactive ? "Inactivo" : isExpired ? "Expirado" : pass.pass_type === "day" ? "Day Pass" : "Single Use";
+    isUsed ? "Usado" : isInactive ? "Inactivo" : isExpired ? "Expirado" : pass.pass_type === "day" ? "Day Pass" : "Single Use";
 
   return (
     <div
@@ -26,7 +27,7 @@ function PassCard({ pass, onViewQR, onDelete }) {
         border: "0.5px solid var(--color-border)",
         borderRadius: "10px",
         padding: "12px 14px",
-        opacity: isInactive || isExpired ? 0.6 : 1,
+        opacity: isUsed || isInactive || isExpired ? 0.6 : 1,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
@@ -50,7 +51,7 @@ function PassCard({ pass, onViewQR, onDelete }) {
         {" — "}
         {new Date(pass.valid_to).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}
       </div>
-      {!isInactive && !isExpired && (
+      {!isUsed && !isInactive && !isExpired && (
         <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
           <button
             onClick={() => onViewQR(pass)}
