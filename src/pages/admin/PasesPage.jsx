@@ -3,18 +3,18 @@ import { getPasses } from "../../api/passes.api";
 import { Spinner } from "../../components/Spinner";
 
 function PassRow({ pass }) {
-  const isUsed = pass.is_used;
+  const isInactive = !pass.is_active;
   const isExpired = new Date(pass.valid_to) < new Date();
 
   const badgeStyle =
-    isUsed || isExpired
+    isInactive || isExpired
       ? { background: "#f1f5f9", color: "#64748b" }
       : pass.pass_type === "day"
       ? { background: "#e0f2fe", color: "#0369a1" }
       : { background: "#fef3c7", color: "#b45309" };
 
   const badgeLabel =
-    isUsed ? "Usado" : isExpired ? "Expirado" : pass.pass_type === "day" ? "Day Pass" : "Single Use";
+    isInactive ? "Inactivo" : isExpired ? "Expirado" : pass.pass_type === "day" ? "Day Pass" : "Single Use";
 
   return (
     <div
@@ -23,7 +23,7 @@ function PassRow({ pass }) {
         border: "0.5px solid var(--color-border)",
         borderRadius: "10px",
         padding: "12px 14px",
-        opacity: isUsed || isExpired ? 0.6 : 1,
+        opacity: isInactive || isExpired ? 0.6 : 1,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
