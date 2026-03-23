@@ -4,18 +4,18 @@ export default function QRModal({ pass, onClose }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (!pass?.qr_code) return;
+    if (!pass?.id) return;
 
     import("https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js").then(() => {
       if (canvasRef.current) {
-        window.QRCode.toCanvas(canvasRef.current, pass.qr_code, {
+        window.QRCode.toCanvas(canvasRef.current, String(pass.id), {
           width: 180,
           margin: 2,
           color: { dark: "#0c4a6e", light: "#ffffff" },
         });
       }
     });
-  }, [pass?.qr_code]);
+  }, [pass?.id]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -84,7 +84,7 @@ export default function QRModal({ pass, onClose }) {
         >
           <canvas ref={canvasRef} style={{ borderRadius: "8px" }} />
           <div style={{ fontSize: "10px", fontFamily: "monospace", color: "var(--color-text-muted)", letterSpacing: "1px" }}>
-            {pass.qr_code}
+            {pass.id}
           </div>
           <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "3px" }}>
             {[
