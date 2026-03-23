@@ -38,23 +38,15 @@ export default function GuardLayout() {
             `guard-tab${isActive ? " active" : ""}`
           }
         >
-          Accesos abiertos
+          Accesos
         </NavLink>
         <NavLink
-          to="/guard/validar"
+          to="/guard/registrar"
           className={({ isActive }) =>
             `guard-tab${isActive ? " active" : ""}`
           }
         >
-          Validar QR
-        </NavLink>
-        <NavLink
-          to="/guard/manual"
-          className={({ isActive }) =>
-            `guard-tab${isActive ? " active" : ""}`
-          }
-        >
-          Manual
+          Registrar entrada
         </NavLink>
       </nav>
 
