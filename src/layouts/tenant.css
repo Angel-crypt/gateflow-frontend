@@ -1,0 +1,51 @@
+.tenant-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.tenant-topbar {
+  background: #0369a1;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tenant-topbar__title {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tenant-topbar__sub {
+  color: #bae6fd;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.tenant-topbar__btn {
+  background: #fff;
+  color: #0369a1;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tenant-content {
+  flex: 1;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}

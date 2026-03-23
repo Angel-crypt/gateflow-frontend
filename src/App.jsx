@@ -2,8 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { ProtectedRoute } from "./router/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
+import GuardLayout from "./layouts/GuardLayout";
+import TenantLayout from "./layouts/TenantLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
+import PasesPage from "./pages/admin/PasesPage";
+import AccesosPage from "./pages/admin/AccesosPage";
+import AccessListPage from "./pages/guard/AccessListPage";
+import RegisterAccessPage from "./pages/guard/RegisterAccessPage";
+import PassesPage from "./pages/tenant/PassesPage";
 
 export default function App() {
   return (
@@ -19,19 +26,24 @@ export default function App() {
               <Route path="/admin"           element={<DashboardPage />} />
               <Route path="/admin/usuarios"  element={<div style={placeholderStyle}>Usuarios — próximamente</div>} />
               <Route path="/admin/destinos"  element={<div style={placeholderStyle}>Destinos — próximamente</div>} />
-              <Route path="/admin/pases"     element={<div style={placeholderStyle}>Pases — próximamente</div>} />
-              <Route path="/admin/accesos"   element={<div style={placeholderStyle}>Accesos — próximamente</div>} />
+              <Route path="/admin/pases"     element={<PasesPage />} />
+              <Route path="/admin/accesos"   element={<AccesosPage />} />
             </Route>
           </Route>
 
           {/* Guard — permisos: access-logs, validate */}
           <Route element={<ProtectedRoute roles={["guard"]} />}>
-            <Route path="/guard" element={<div>Guard home</div>} />
+            <Route element={<GuardLayout />}>
+              <Route path="/guard"            element={<AccessListPage />} />
+              <Route path="/guard/registrar"  element={<RegisterAccessPage />} />
+            </Route>
           </Route>
 
           {/* Tenant — permisos: passes (propios), destinations (propias) */}
           <Route element={<ProtectedRoute roles={["tenant"]} />}>
-            <Route path="/tenant" element={<div>Tenant home</div>} />
+            <Route element={<TenantLayout />}>
+              <Route path="/tenant" element={<PassesPage />} />
+            </Route>
           </Route>
 
           {/* Fallback */}
