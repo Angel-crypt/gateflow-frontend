@@ -7,7 +7,7 @@ function useDestinations() {
   return useQuery({
     queryKey: ["destinations"],
     queryFn: async () => {
-      const res = await apiClient.get("/destinations/");
+      const res = await apiClient.get("/api/destinations/");
       return res.data;
     },
   });
