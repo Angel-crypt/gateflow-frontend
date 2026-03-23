@@ -8,7 +8,7 @@ function useDestinations() {
     queryKey: ["destinations"],
     queryFn: async () => {
       const res = await apiClient.get("/api/destinations/");
-      return res.data;
+      return res.data.results ?? res.data;
     },
   });
 }
