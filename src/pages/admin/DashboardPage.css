@@ -1,10 +1,29 @@
-/* ─── Dashboard Layout ───────────────────────────────────── */
-.dash { display: flex; flex-direction: column; gap: var(--space-6); }
+/* ─── Tokens locales del Dashboard ───────────────────────── */
+/*
+ * --color-info y --color-info-light no existen en el sistema global.
+ * Se definen aquí como scope de .dash para eliminar los hardcodes
+ * #0ea5e9 / #e0f2fe dispersos en el JSX.
+ */
+.dash {
+  --color-info:       #0ea5e9;
+  --color-info-light: #e0f2fe;
 
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * Espaciado entre secciones aumentado de space-6 (24px) a space-10 (40px).
+   * Con 4 bloques verticales distintos necesitamos "aire" real entre ellos.
+   */
+  gap: var(--space-10);
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
 .dash__header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  gap: var(--space-4);
 }
 .dash__title {
   font-family: 'Fira Code', monospace;
@@ -18,7 +37,79 @@
   margin-top: 2px;
 }
 
-/* ─── Stat grid ──────────────────────────────────────────── */
+/* Acciones del header (timestamp + botón) */
+.dash__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+/* Timestamp "Actualizado HH:MM" — feedback visual del estado del dato */
+.dash__refresh-time {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+/*
+ * Botón Actualizar con clase CSS propia.
+ * Antes tenía 11 props inline y sin hover visible.
+ */
+.dash__refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  padding: var(--space-2) var(--space-3);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.dash__refresh-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.dash__refresh-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* ─── Section wrapper ─────────────────────────────────────── */
+/*
+ * .dash__section agrupa el SectionHeader + su contenido.
+ * No necesita estilos propios: el gap de .dash ya los separa.
+ * Existe como contenedor semántico para media queries.
+ */
+.dash__section { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* ─── Section header ──────────────────────────────────────── */
+/*
+ * Reemplaza el componente SectionTitle con inline styles.
+ * Separado visualmente de analytics__title: este vive
+ * FUERA de las cards, actuando como encabezado de sección.
+ */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+}
+.section-header span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Stat grids ──────────────────────────────────────────── */
 .dash__grid-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -32,7 +123,7 @@
 .dash__grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 /* ─── KPI card ───────────────────────────────────────────── */
@@ -45,9 +136,8 @@
   overflow: hidden;
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.kpi--clickable:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.kpi--clickable:focus-visible { box-shadow: 0 0 0 3px var(--kpi-accent, var(--color-primary)); outline: none; }
 
+/* Línea de color superior — acento de la card */
 .kpi::before {
   content: '';
   position: absolute;
@@ -55,6 +145,30 @@
   height: 3px;
   background: var(--kpi-accent, var(--color-primary));
 }
+
+.kpi--clickable { cursor: pointer; }
+.kpi--clickable:hover  { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.kpi--clickable:focus-visible {
+  box-shadow: 0 0 0 3px var(--kpi-accent, var(--color-primary));
+  outline: none;
+}
+
+/*
+ * Variante hero — métrica más crítica (personas dentro del parque ahora).
+ * Mayor tamaño de valor y fondo con tinte sutil del color de acento.
+ * Sin cambios de layout — mantiene el mismo ancho en el grid.
+ */
+.kpi--hero {
+  background: linear-gradient(
+    145deg,
+    var(--color-surface) 55%,
+    var(--kpi-accent-light, var(--color-primary-light)) 100%
+  );
+}
+.kpi--hero .kpi__value {
+  font-size: 2.375rem; /* +18% respecto al estándar 2rem */
+}
+
 .kpi__top {
   display: flex;
   align-items: flex-start;
@@ -70,6 +184,9 @@
   flex-shrink: 0;
 }
 .kpi__badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 2px var(--space-2);
@@ -92,20 +209,46 @@
   font-weight: 500;
 }
 
-/* Live pulse */
-.kpi--live .kpi__value::after {
-  content: '';
+/*
+ * Live dot — REDISEÑADO.
+ *
+ * Problemas del original:
+ *   - Era un ::after pseudo-elemento en .kpi__value: aparecía junto
+ *     al número dando sensación de texto truncado (ej: "42•")
+ *   - Usaba scale(0.7) + opacity:0.4 simultáneamente, lo que hacía
+ *     el parpadeo muy agresivo visualmente aunque la duración fuera 2s
+ *
+ * Solución:
+ *   - Movido al interior del badge "En vivo" como elemento real
+ *   - Solo opacity pulse, sin transform scale — mucho más sutil
+ *   - Duración aumentada a 2.5s
+ */
+.live-dot {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--color-success);
-  margin-left: var(--space-2);
-  vertical-align: middle;
-  animation: pulse-dot 2s ease-in-out infinite;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: live-pulse 2.5s ease-in-out infinite;
 }
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.4; transform: scale(0.7); }
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+  /* Sin scale — solo opacidad, mucho menos agresivo visualmente */
+}
+
+/* Loading skeleton */
+.kpi--loading .kpi__value,
+.kpi--loading .kpi__label {
+  background: var(--color-border);
+  color: transparent;
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
 }
 
 /* ─── Detail card ────────────────────────────────────────── */
@@ -159,7 +302,11 @@
   transition: width 0.6s ease;
 }
 
-/* ─── Analytics section ──────────────────────────────────── */
+/* ─── Analytics card ─────────────────────────────────────── */
+/*
+ * Un solo bloque analytics con tabs en lugar de dos bloques separados.
+ * Reduce la densidad vertical y deja claro que son categorías distintas.
+ */
 .analytics {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -168,24 +315,92 @@
 }
 .analytics__header {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
+  padding-right: var(--space-5);
+  gap: var(--space-4);
 }
-.analytics__title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text);
+
+/* Tabs de navegación dentro del analytics header */
+.analytics__tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.analytics__tab {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-text-muted);
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
-.analytics__body { padding: var(--space-5); }
+.analytics__tab:hover { color: var(--color-text); }
+.analytics__tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.analytics__tab:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-primary-light);
+}
+
+/*
+ * Padding aumentado de space-5 (20px) a space-6 (24px) para
+ * dar más respiración al contenido analítico.
+ */
+.analytics__body { padding: var(--space-6); }
+
+/* Spinner centrado para estados de carga */
+.analytics__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-10);
+}
+
+/*
+ * Sub-label unificado — reemplaza los 4 divs con font-size inline
+ * dispersos en el JSX original. Misma clase para todos.
+ */
+.analytics__sub-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-bottom: var(--space-3);
+}
+
+/* Columna derecha del grid analytics */
+.analytics__right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Lista de StatRows dentro de analytics */
+.analytics__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
 
 /* Period pills */
-.period-pills { display: flex; gap: var(--space-1); }
+.period-pills {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
 .period-pill {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
@@ -195,6 +410,7 @@
   cursor: pointer;
   background: var(--color-surface);
   color: var(--color-text-muted);
+  font-family: inherit;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .period-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
@@ -205,18 +421,23 @@
 }
 
 /* ─── Bar chart (by_day) ─────────────────────────────────── */
+/*
+ * Altura aumentada de 80px → 140px.
+ * El gráfico era demasiado pequeño para ser el widget de tendencia
+ * principal — parecía relleno visual más que dato informativo.
+ */
 .bar-chart {
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 80px;
+  height: 140px;
 }
 .bar-chart__col {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   height: 100%;
   justify-content: flex-end;
 }
@@ -228,8 +449,21 @@
   min-height: 3px;
 }
 .bar-chart__bar:hover { background: var(--color-primary-hover); }
-.bar-chart__label {
+
+/* Valor sobre la barra — accesible en mobile sin hover */
+.bar-chart__count {
   font-size: 0.625rem;
+  color: var(--color-text-muted);
+  line-height: 1;
+  min-height: 10px;
+}
+
+/*
+ * Label de fecha: subido de 10px → 11px.
+ * 10px (0.625rem) estaba bajo el mínimo WCAG de 12px para texto informativo.
+ */
+.bar-chart__label {
+  font-size: 0.6875rem;
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -246,10 +480,12 @@
   background: var(--color-primary);
   transition: width 0.6s ease;
 }
-.type-split__manual {
-  background: var(--color-warning);
-  flex: 1;
-}
+
+/*
+ * Leyenda simplificada: solo dot + texto.
+ * Se eliminó el ícono redundante (QrCode/PenLine) que duplicaba
+ * la información del dot de color.
+ */
 .type-legend {
   display: flex;
   gap: var(--space-4);
@@ -268,16 +504,35 @@
   flex-shrink: 0;
 }
 
-/* ─── Loading / empty ────────────────────────────────────── */
-.kpi--loading .kpi__value,
-.kpi--loading .kpi__label {
-  background: var(--color-border);
-  color: transparent;
-  border-radius: var(--radius-sm);
-  animation: shimmer 1.4s infinite;
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* 4 cols → 2x2 en tablets */
+  .dash__grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
-@keyframes shimmer {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.5; }
-  100% { opacity: 1; }
+
+@media (max-width: 768px) {
+  /* 3 cols → 1 col en mobile landscape */
+  .dash__grid-3 { grid-template-columns: 1fr; }
+  .dash__grid-2 { grid-template-columns: 1fr; }
+
+  /* Menos gap vertical en pantallas pequeñas */
+  .dash { gap: var(--space-8); }
+
+  .analytics__right-col { gap: var(--space-5); }
+}
+
+@media (max-width: 640px) {
+  /* Header apilado verticalmente en mobile */
+  .dash__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .dash__header-actions { gap: var(--space-2); }
+
+  /* 2 cols → 1 col en mobile portrait */
+  .dash__grid-4 { grid-template-columns: 1fr; }
+
+  /* Analytics body con menos padding en mobile */
+  .analytics__body { padding: var(--space-4); }
 }

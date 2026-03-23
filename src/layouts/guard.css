@@ -1,0 +1,93 @@
+.guard-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.guard-topbar {
+  background: #0369a1;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.guard-topbar__title {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.guard-topbar__sub {
+  color: #bae6fd;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.guard-topbar__badge {
+  background: #0c4a6e;
+  color: #e0f2fe;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.guard-tabs {
+  display: flex;
+  background: var(--color-surface);
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+.guard-tab {
+  flex: 1;
+  padding: 11px 0;
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  text-decoration: none;
+}
+
+.guard-tab.active {
+  color: #0369a1;
+  border-bottom: 2px solid #0369a1;
+  font-weight: 500;
+}
+
+.guard-content {
+  flex: 1;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.guard-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #0369a1;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+}
