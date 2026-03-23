@@ -90,7 +90,7 @@ export default function AccesosPage() {
     queryKey: ["access-logs"],
     queryFn: async () => {
       const res = await getAccessLogs();
-      return res.data;
+      return res.data.results ?? res.data;
     },
   });
 
