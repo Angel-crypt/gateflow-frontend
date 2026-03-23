@@ -9,8 +9,7 @@ import DashboardPage from "./pages/admin/DashboardPage";
 import PasesPage from "./pages/admin/PasesPage";
 import AccesosPage from "./pages/admin/AccesosPage";
 import AccessListPage from "./pages/guard/AccessListPage";
-import ValidateQRPage from "./pages/guard/ValidateQRPage";
-import ManualAccessPage from "./pages/guard/ManualAccessPage";
+import RegisterAccessPage from "./pages/guard/RegisterAccessPage";
 import PassesPage from "./pages/tenant/PassesPage";
 
 export default function App() {
@@ -35,9 +34,8 @@ export default function App() {
           {/* Guard — permisos: access-logs, validate */}
           <Route element={<ProtectedRoute roles={["guard"]} />}>
             <Route element={<GuardLayout />}>
-              <Route path="/guard"          element={<AccessListPage />} />
-              <Route path="/guard/validar"  element={<ValidateQRPage />} />
-              <Route path="/guard/manual"   element={<ManualAccessPage />} />
+              <Route path="/guard"            element={<AccessListPage />} />
+              <Route path="/guard/registrar"  element={<RegisterAccessPage />} />
             </Route>
           </Route>
 
