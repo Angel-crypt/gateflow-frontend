@@ -88,7 +88,7 @@ export default function PassesPage() {
     queryKey: ["passes"],
     queryFn: async () => {
       const res = await getPasses();
-      return res.data;
+      return res.data.results ?? res.data;
     },
   });
 
