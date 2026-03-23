@@ -1,13 +1,13 @@
 import apiClient from "./apiClient";
 
 export const getAccessLogs = () =>
-  apiClient.get("/access/");
+  apiClient.get("/api/access-logs/");
 
 export const getAccessLog = (id) =>
-  apiClient.get(`/access/${id}/`);
+  apiClient.get(`/api/access-logs/${id}/`);
 
 export const createAccessLog = (data) =>
-  apiClient.post("/access/create/", data);
+  apiClient.post("/api/access-logs/create/", data);
 
 export const registerExit = (id) =>
-  apiClient.patch(`/access/${id}/`, { status: "closed" });
+  apiClient.post(`/api/access-logs/${id}/register-exit/`);

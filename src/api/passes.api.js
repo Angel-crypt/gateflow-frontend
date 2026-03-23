@@ -1,19 +1,19 @@
 import apiClient from "./apiClient";
 
 export const getPasses = () =>
-  apiClient.get("/passes/");
+  apiClient.get("/api/passes/");
 
 export const getPass = (id) =>
-  apiClient.get(`/passes/${id}/`);
+  apiClient.get(`/api/passes/${id}/`);
 
 export const createPass = (data) =>
-  apiClient.post("/passes/", data);
+  apiClient.post("/api/passes/", data);
 
 export const updatePass = (id, data) =>
-  apiClient.patch(`/passes/${id}/`, data);
+  apiClient.patch(`/api/passes/${id}/`, data);
 
 export const deletePass = (id) =>
-  apiClient.delete(`/passes/${id}/`);
+  apiClient.delete(`/api/passes/${id}/`);
 
-export const validatePass = (qrCode) =>
-  apiClient.post("/passes/validate/", { qr_code: qrCode });
+export const validatePass = (passId) =>
+  apiClient.post("/api/passes/validate/", { pass_id: Number(passId) });
