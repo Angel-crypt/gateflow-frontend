@@ -76,6 +76,19 @@ function UserCard({ user, onEdit, onToggle, onDelete }) {
         >
           {isActive ? "Desactivar" : "Activar"}
         </button>
+        <button
+          onClick={() => onDelete(user.id)}
+          style={{
+            padding: "7px 12px",
+            background: "var(--color-surface)",
+            color: "#dc2626",
+            border: "0.5px solid #fecaca",
+            borderRadius: "7px", fontSize: "12px",
+            cursor: "pointer",
+          }}
+        >
+          Eliminar
+        </button>
       </div>
     </div>
   );
@@ -97,6 +110,11 @@ export default function UsuariosPage() {
 
   const toggleMutation = useMutation({
     mutationFn: (user) => toggleActiveUser(user.id, !user.is_active),
+    onSuccess: () => queryClient.invalidateQueries(["users"]),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteUser(id),
     onSuccess: () => queryClient.invalidateQueries(["users"]),
   });
 
@@ -168,6 +186,7 @@ export default function UsuariosPage() {
           user={user}
           onEdit={() => setSelectedUser(user)}
           onToggle={(u) => toggleMutation.mutate(u)}
+          onDelete={(id) => deleteMutation.mutate(id)}
         />
       ))}
     </div>
