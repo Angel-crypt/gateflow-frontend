@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUsers, toggleActiveUser, deleteUser } from "../../api/users.api";
 import { Spinner } from "../../components/Spinner";
+import CreateUserModal from "./CreateUserModal";
+import EditUserModal from "./EditUserModal";
 
 function UserCard({ user, onEdit, onToggle, onDelete }) {
   const isActive = user.is_active;
@@ -189,6 +191,18 @@ export default function UsuariosPage() {
           onDelete={(id) => deleteMutation.mutate(id)}
         />
       ))}
+
+      {showCreate && (
+        <CreateUserModal onClose={() => setShowCreate(false)} />
+      )}
+
+      {selectedUser && (
+        <EditUserModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
     </div>
   );
 }
+
