@@ -28,11 +28,13 @@ function QrCamera({ onScan, onPermissionError }) {
         },
         () => {} // ignorar frames sin QR
       )
-      .catch(() => onPermissionError());
+      .catch(() => {
+        const errorType = !window.isSecureContext ? "https" : "permission";
+        onPermissionError(errorType);
+      });
 
     return () => {
-      scanner.isScanning &&
-        scanner.stop().catch(() => {});
+      scanner.stop().catch(() => {});
     };
   }, []);
 
@@ -155,9 +157,6 @@ export default function ValidateQRPage() {
     borderRadius: active ? "7px" : "7px",
   });
 
-  const showCamera = mode === "camera" && !camError && !result && !confirmed;
-  const showScanning = showCamera;
-
   return (
     <>
       {/* ── Selector de modo ── */}
@@ -189,7 +188,11 @@ export default function ValidateQRPage() {
               fontSize: "13px", color: "var(--color-text-muted)",
               display: "flex", flexDirection: "column", gap: "8px", alignItems: "center",
             }}>
-              <div style={{ fontSize: "12px" }}>Sin acceso a la cámara.</div>
+              <div style={{ fontSize: "12px" }}>
+                {camError === "https"
+                  ? "El acceso a la cámara requiere una conexión segura (HTTPS)."
+                  : "Sin acceso a la cámara."}
+              </div>
               <button
                 onClick={() => handleSwitchMode("manual")}
                 style={{
@@ -205,7 +208,7 @@ export default function ValidateQRPage() {
             <QrCamera
               key={String(confirmed)}
               onScan={handleScan}
-              onPermissionError={() => setCamError(true)}
+              onPermissionError={(type) => setCamError(type)}
             />
           )}
         </div>
