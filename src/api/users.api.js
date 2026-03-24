@@ -5,3 +5,6 @@ export const getUsers = () =>
 
 export const getUser = (id) =>
   apiClient.get(`/users/${id}/`);
+
+export const createUser = (data) =>
+  apiClient.post("/users/", data);
