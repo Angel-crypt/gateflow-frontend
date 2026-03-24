@@ -5,3 +5,6 @@ export const getDestinations = () =>
 
 export const getDestination = (id) =>
   apiClient.get(`/destinations/${id}/`);
+
+export const createDestination = (data) =>
+  apiClient.post("/destinations/", data);
