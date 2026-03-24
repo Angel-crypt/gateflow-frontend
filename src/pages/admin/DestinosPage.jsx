@@ -59,6 +59,7 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
 export default function DestinosPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState(null);
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["destinations"],
@@ -67,6 +68,10 @@ export default function DestinosPage() {
       return res.data;
     },
   });
+
+  const filtered = data?.filter((d) =>
+    typeFilter === "all" ? true : d.type === typeFilter
+  ) ?? [];
 
   if (isLoading) return <Spinner />;
 
@@ -78,7 +83,7 @@ export default function DestinosPage() {
             Destinos
           </div>
           <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
-            {data?.length ?? 0} destinos en total
+            {filtered.length} destinos en total
           </div>
         </div>
         <button
@@ -98,13 +103,35 @@ export default function DestinosPage() {
         </button>
       </div>
 
-      {!data?.length && (
+      {/* Filtro de tipo */}
+      <div style={{ display: "flex", gap: "6px" }}>
+        {["all", "company", "area"].map((t) => (
+          <button
+            key={t}
+            onClick={() => setTypeFilter(t)}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "999px",
+              border: "0.5px solid var(--color-border)",
+              fontSize: "11px",
+              fontWeight: 500,
+              cursor: "pointer",
+              background: typeFilter === t ? "#0369a1" : "var(--color-surface)",
+              color: typeFilter === t ? "#fff" : "var(--color-text-muted)",
+            }}
+          >
+            {t === "all" ? "Todos" : t === "company" ? "Empresas" : "Áreas"}
+          </button>
+        ))}
+      </div>
+
+      {!filtered.length && (
         <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "13px", marginTop: "40px" }}>
           No hay destinos registrados aún.
         </p>
       )}
 
-      {data?.map((destination) => (
+      {filtered.map((destination) => (
         <DestinationCard
           key={destination.id}
           destination={destination}
