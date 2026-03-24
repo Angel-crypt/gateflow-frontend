@@ -14,3 +14,6 @@ export const updateUser = (id, data) =>
 
 export const deleteUser = (id) =>
   apiClient.delete(`/users/${id}/`);
+
+export const toggleActiveUser = (id, isActive) =>
+  apiClient.patch(`/users/${id}/`, { is_active: isActive });
