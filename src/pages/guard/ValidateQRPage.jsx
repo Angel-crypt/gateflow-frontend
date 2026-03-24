@@ -5,14 +5,22 @@ import { validatePass } from "../../api/passes.api";
 import { createAccessLog } from "../../api/access.api";
 
 // ── Cámara QR ────────────────────────────────────────────────
-const SCANNER_ID = "qr-camera-feed";
+const SCANNER_ID = "qr-camera-feed-validate";
 
 function QrCamera({ onScan, onPermissionError }) {
   const scannerRef = useRef(null);
-  const scannedRef = useRef(false); // evita múltiples callbacks
+  const scannedRef = useRef(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode(SCANNER_ID);
+    if (scannerRef.current?.isScanning) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const scanner = new Html5Qrcode(SCANNER_ID, { verbose: false });
     scannerRef.current = scanner;
 
     scanner
@@ -22,19 +30,20 @@ function QrCamera({ onScan, onPermissionError }) {
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();
-          if (!id || isNaN(Number(id))) return; // solo acepta IDs numéricos
+          if (!id || isNaN(Number(id))) return;
           scannedRef.current = true;
           scanner.stop().catch(() => {}).finally(() => onScan(id));
         },
-        () => {} // ignorar frames sin QR
+        () => {}
       )
       .catch(() => {
-        const errorType = !window.isSecureContext ? "https" : "permission";
-        onPermissionError(errorType);
+        onPermissionError(!window.isSecureContext ? "https" : "permission");
       });
 
     return () => {
-      scanner.stop().catch(() => {});
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.stop().catch(() => {});
+      }
     };
   }, []);
 
@@ -43,6 +52,7 @@ function QrCamera({ onScan, onPermissionError }) {
       {/* Contenedor donde html5-qrcode inyecta el video */}
       <div
         id={SCANNER_ID}
+        ref={containerRef}
         style={{
           width: "100%",
           borderRadius: "10px",
@@ -50,6 +60,7 @@ function QrCamera({ onScan, onPermissionError }) {
           background: "#000",
           minHeight: "260px",
         }}
+        className="qr-scanner-container"
       />
       {/* Marco de guía */}
       <div
