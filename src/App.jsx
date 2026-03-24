@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./auth/AuthContext";
+import AuthProvider from "./auth/AuthContext";
 import { ProtectedRoute } from "./router/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import GuardLayout from "./layouts/GuardLayout";
@@ -8,6 +8,8 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import PasesPage from "./pages/admin/PasesPage";
 import AccesosPage from "./pages/admin/AccesosPage";
+import UsuariosPage from "./pages/admin/UsuariosPage";
+import DestinosPage from "./pages/admin/DestinosPage";
 import AccessListPage from "./pages/guard/AccessListPage";
 import RegisterAccessPage from "./pages/guard/RegisterAccessPage";
 import PassesPage from "./pages/tenant/PassesPage";
@@ -24,8 +26,8 @@ export default function App() {
           <Route element={<ProtectedRoute roles={["admin"]} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin"           element={<DashboardPage />} />
-              <Route path="/admin/usuarios"  element={<div style={placeholderStyle}>Usuarios — próximamente</div>} />
-              <Route path="/admin/destinos"  element={<div style={placeholderStyle}>Destinos — próximamente</div>} />
+              <Route path="/admin/usuarios"  element={<UsuariosPage />} />
+              <Route path="/admin/destinos"  element={<DestinosPage />} />
               <Route path="/admin/pases"     element={<PasesPage />} />
               <Route path="/admin/accesos"   element={<AccesosPage />} />
             </Route>

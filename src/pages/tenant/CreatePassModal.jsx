@@ -13,12 +13,12 @@ function useDestinations() {
   });
 }
 
-// Formato YYYY-MM-DDTHH:mm para datetime-local
+// Formato YYYY-MM-DDTHH:mm:ss para datetime-local (ISO con segundos)
 function toLocalISO(date) {
   const d = new Date(date);
   d.setSeconds(0, 0);
   const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 function addHours(isoStr, hours) {
@@ -59,17 +59,34 @@ export default function CreatePassModal({ onClose, onSuccess }) {
   const [duration, setDuration] = useState("1h");
 
   const initialNow = nowISO();
+
+  // Auto-seleccionar destino si solo hay uno
+  const defaultDestination = destinations.length === 1 ? destinations[0].id : "";
+
   const [form, setForm] = useState({
     visitor_name: "",
     plate: "",
     pass_type: "day",
     valid_from: initialNow,
     valid_to: addHours(initialNow, 1),
-    destination: "",
+    destination: defaultDestination,
   });
 
   const mutation = useMutation({
-    mutationFn: () => createPass(form),
+    mutationFn: () => {
+      const payload = {
+        ...form,
+        // Convertir destination a número si existe
+        destination: form.destination ? Number(form.destination) : undefined,
+      };
+      // Eliminar campos vacíos
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === "" || payload[key] === null) {
+          delete payload[key];
+        }
+      });
+      return createPass(payload);
+    },
     onSuccess,
   });
 
@@ -114,7 +131,7 @@ export default function CreatePassModal({ onClose, onSuccess }) {
     }));
   };
 
-  const isValid = form.visitor_name && form.plate && form.valid_from && form.valid_to;
+  const isValid = form.visitor_name && form.plate && form.destination && form.valid_from && form.valid_to && (form.destination !== "" || destinations.length === 1);
 
   const formatDisplay = (iso) =>
     iso ? new Date(iso).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—";
@@ -196,7 +213,23 @@ export default function CreatePassModal({ onClose, onSuccess }) {
         </div>
 
         {/* Destino */}
-        {destinations.length > 1 && (
+        {destinations.length === 1 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <label style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
+              Destino
+            </label>
+            <div style={{
+              padding: "9px 10px",
+              background: "var(--color-bg)",
+              border: "0.5px solid var(--color-border)",
+              borderRadius: "7px",
+              fontSize: "13px",
+              color: "var(--color-text)",
+            }}>
+              {destinations[0].name}
+            </div>
+          </div>
+        ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <label style={{ fontSize: "11px", color: "var(--color-text-muted)", fontWeight: 500 }}>
               Destino

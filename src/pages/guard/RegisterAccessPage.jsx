@@ -17,20 +17,20 @@ function useDestinations() {
 }
 
 // ── Cámara QR ────────────────────────────────────────────────
-const SCANNER_ID = "qr-camera-feed";
+const SCANNER_ID = "qr-camera-feed-register";
 
 function QrCamera({ onScan, onPermissionError }) {
   const scannerRef = useRef(null);
   const scannedRef = useRef(false);
-  const startingRef = useRef(false); // evita doble init en StrictMode
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (startingRef.current) return;
-    startingRef.current = true;
+    if (scannerRef.current?.isScanning) return;
 
-    // Limpiar contenido previo (fix para StrictMode / remounts)
-    const container = document.getElementById(SCANNER_ID);
-    if (container) container.innerHTML = "";
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.innerHTML = "";
 
     const scanner = new Html5Qrcode(SCANNER_ID, { verbose: false });
     scannerRef.current = scanner;
@@ -38,7 +38,7 @@ function QrCamera({ onScan, onPermissionError }) {
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();
@@ -46,15 +46,13 @@ function QrCamera({ onScan, onPermissionError }) {
           scannedRef.current = true;
           scanner.stop().catch(() => {}).finally(() => onScan(id));
         },
-        () => {} // frames sin QR — ignorar
+        () => {}
       )
       .catch(() => {
-        startingRef.current = false;
         onPermissionError();
       });
 
     return () => {
-      startingRef.current = false;
       if (scannerRef.current?.isScanning) {
         scannerRef.current.stop().catch(() => {});
       }
@@ -65,15 +63,17 @@ function QrCamera({ onScan, onPermissionError }) {
     <div style={{ position: "relative", width: "100%" }}>
       <div
         id={SCANNER_ID}
+        ref={containerRef}
         style={{
           width: "100%",
-          borderRadius: "10px",
+          aspectRatio: "1/1",
+          borderRadius: "12px",
           overflow: "hidden",
           background: "#000",
-          minHeight: "250px",
-          // Ocultar controles extra que inyecta html5-qrcode
+          maxHeight: "350px",
           lineHeight: 0,
         }}
+        className="qr-scanner-container"
       />
       {/* Marco de guía */}
       <div
@@ -82,23 +82,16 @@ function QrCamera({ onScan, onPermissionError }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "220px",
-          height: "220px",
-          border: "1.5px solid rgba(255,255,255,0.5)",
-          borderRadius: "12px",
-          boxShadow: "0 0 0 9999px rgba(0,0,0,0.3)",
+          width: "70%",
+          height: "70%",
+          maxWidth: "280px",
+          maxHeight: "280px",
+          border: "3px solid #0369a1",
+          borderRadius: "16px",
+          boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)",
           pointerEvents: "none",
         }}
-      >
-        {[
-          { top: -2, left: -2, borderTop: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "10px 0 0 0" },
-          { top: -2, right: -2, borderTop: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 10px 0 0" },
-          { bottom: -2, left: -2, borderBottom: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "0 0 0 10px" },
-          { bottom: -2, right: -2, borderBottom: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 0 10px 0" },
-        ].map((s, i) => (
-          <div key={i} style={{ position: "absolute", width: "20px", height: "20px", ...s }} />
-        ))}
-      </div>
+      />
       <div style={{
         position: "absolute", bottom: "10px", left: 0, right: 0,
         textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.8)",
@@ -280,7 +273,7 @@ function QRTab() {
           Cámara
         </button>
         <button style={tabStyle(qrMode === "teclado")} onClick={() => handleSwitchQrMode("teclado")}>
-          ID / Escáner
+          ID
         </button>
       </div>
 

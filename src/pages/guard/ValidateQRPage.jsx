@@ -5,34 +5,45 @@ import { validatePass } from "../../api/passes.api";
 import { createAccessLog } from "../../api/access.api";
 
 // ── Cámara QR ────────────────────────────────────────────────
-const SCANNER_ID = "qr-camera-feed";
+const SCANNER_ID = "qr-camera-feed-validate";
 
 function QrCamera({ onScan, onPermissionError }) {
   const scannerRef = useRef(null);
-  const scannedRef = useRef(false); // evita múltiples callbacks
+  const scannedRef = useRef(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode(SCANNER_ID);
+    if (scannerRef.current?.isScanning) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const scanner = new Html5Qrcode(SCANNER_ID, { verbose: false });
     scannerRef.current = scanner;
 
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 12, qrbox: { width: 230, height: 230 } },
+        { fps: 12, qrbox: { width: 250, height: 250 } },
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();
-          if (!id || isNaN(Number(id))) return; // solo acepta IDs numéricos
+          if (!id || isNaN(Number(id))) return;
           scannedRef.current = true;
           scanner.stop().catch(() => {}).finally(() => onScan(id));
         },
-        () => {} // ignorar frames sin QR
+        () => {}
       )
-      .catch(() => onPermissionError());
+      .catch(() => {
+        onPermissionError(!window.isSecureContext ? "https" : "permission");
+      });
 
     return () => {
-      scanner.isScanning &&
-        scanner.stop().catch(() => {});
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.stop().catch(() => {});
+      }
     };
   }, []);
 
@@ -41,13 +52,16 @@ function QrCamera({ onScan, onPermissionError }) {
       {/* Contenedor donde html5-qrcode inyecta el video */}
       <div
         id={SCANNER_ID}
+        ref={containerRef}
         style={{
           width: "100%",
-          borderRadius: "10px",
+          aspectRatio: "1/1",
+          borderRadius: "12px",
           overflow: "hidden",
           background: "#000",
-          minHeight: "260px",
+          maxHeight: "350px",
         }}
+        className="qr-scanner-container"
       />
       {/* Marco de guía */}
       <div
@@ -56,24 +70,16 @@ function QrCamera({ onScan, onPermissionError }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "230px",
-          height: "230px",
-          border: "2px solid rgba(255,255,255,0.6)",
-          borderRadius: "12px",
-          boxShadow: "0 0 0 9999px rgba(0,0,0,0.35)",
+          width: "70%",
+          height: "70%",
+          maxWidth: "280px",
+          maxHeight: "280px",
+          border: "3px solid #0369a1",
+          borderRadius: "16px",
+          boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)",
           pointerEvents: "none",
         }}
-      >
-        {/* Esquinas */}
-        {[
-          { top: -2, left: -2, borderTop: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "10px 0 0 0" },
-          { top: -2, right: -2, borderTop: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 10px 0 0" },
-          { bottom: -2, left: -2, borderBottom: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "0 0 0 10px" },
-          { bottom: -2, right: -2, borderBottom: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 0 10px 0" },
-        ].map((s, i) => (
-          <div key={i} style={{ position: "absolute", width: "20px", height: "20px", ...s }} />
-        ))}
-      </div>
+      />
       <div style={{
         position: "absolute", bottom: "12px", left: 0, right: 0,
         textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.8)",
@@ -155,9 +161,6 @@ export default function ValidateQRPage() {
     borderRadius: active ? "7px" : "7px",
   });
 
-  const showCamera = mode === "camera" && !camError && !result && !confirmed;
-  const showScanning = showCamera;
-
   return (
     <>
       {/* ── Selector de modo ── */}
@@ -189,7 +192,11 @@ export default function ValidateQRPage() {
               fontSize: "13px", color: "var(--color-text-muted)",
               display: "flex", flexDirection: "column", gap: "8px", alignItems: "center",
             }}>
-              <div style={{ fontSize: "12px" }}>Sin acceso a la cámara.</div>
+              <div style={{ fontSize: "12px" }}>
+                {camError === "https"
+                  ? "El acceso a la cámara requiere una conexión segura (HTTPS)."
+                  : "Sin acceso a la cámara."}
+              </div>
               <button
                 onClick={() => handleSwitchMode("manual")}
                 style={{
@@ -205,7 +212,7 @@ export default function ValidateQRPage() {
             <QrCamera
               key={String(confirmed)}
               onScan={handleScan}
-              onPermissionError={() => setCamError(true)}
+              onPermissionError={(type) => setCamError(type)}
             />
           )}
         </div>

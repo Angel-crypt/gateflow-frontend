@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import "./tenant.css";
 
-export default function TenantLayout({ onNewPass }) {
+export default function TenantLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
