@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUsers, toggleActiveUser, deleteUser } from "../../api/users.api";
 import { Spinner } from "../../components/Spinner";
@@ -54,5 +55,60 @@ function UserCard({ user, onEdit, onToggle, onDelete }) {
 }
 
 export default function UsuariosPage() {
-  return null;
+  const [showCreate, setShowCreate] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const res = await getUsers();
+      return res.data;
+    },
+  });
+
+  if (isLoading) return <Spinner />;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+        <div>
+          <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-text)" }}>
+            Usuarios
+          </div>
+          <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
+            {data?.length ?? 0} usuarios en total
+          </div>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{
+            padding: "8px 14px",
+            background: "#0369a1",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "12px",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          + Nuevo usuario
+        </button>
+      </div>
+
+      {!data?.length && (
+        <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "13px", marginTop: "40px" }}>
+          No hay usuarios registrados aún.
+        </p>
+      )}
+
+      {data?.map((user) => (
+        <UserCard
+          key={user.id}
+          user={user}
+          onEdit={() => setSelectedUser(user)}
+        />
+      ))}
+    </div>
+  );
 }
