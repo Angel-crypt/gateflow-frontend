@@ -11,3 +11,6 @@ export const createDestination = (data) =>
 
 export const updateDestination = (id, data) =>
   apiClient.patch(`/destinations/${id}/`, data);
+
+export const deleteDestination = (id) =>
+  apiClient.delete(`/destinations/${id}/`);
