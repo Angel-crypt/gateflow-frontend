@@ -57,6 +57,7 @@ function UserCard({ user, onEdit, onToggle, onDelete }) {
 export default function UsuariosPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["users"],
@@ -65,6 +66,10 @@ export default function UsuariosPage() {
       return res.data;
     },
   });
+
+  const filtered = data?.filter((u) =>
+    roleFilter === "all" ? true : u.role === roleFilter
+  ) ?? [];
 
   if (isLoading) return <Spinner />;
 
@@ -76,7 +81,7 @@ export default function UsuariosPage() {
             Usuarios
           </div>
           <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
-            {data?.length ?? 0} usuarios en total
+            {filtered.length} usuarios en total
           </div>
         </div>
         <button
@@ -96,13 +101,35 @@ export default function UsuariosPage() {
         </button>
       </div>
 
-      {!data?.length && (
+      {/* Filtro de rol */}
+      <div style={{ display: "flex", gap: "6px" }}>
+        {["all", "guard", "tenant"].map((r) => (
+          <button
+            key={r}
+            onClick={() => setRoleFilter(r)}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "999px",
+              border: "0.5px solid var(--color-border)",
+              fontSize: "11px",
+              fontWeight: 500,
+              cursor: "pointer",
+              background: roleFilter === r ? "#0369a1" : "var(--color-surface)",
+              color: roleFilter === r ? "#fff" : "var(--color-text-muted)",
+            }}
+          >
+            {r === "all" ? "Todos" : r === "guard" ? "Guardias" : "Inquilinos"}
+          </button>
+        ))}
+      </div>
+
+      {!filtered.length && (
         <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "13px", marginTop: "40px" }}>
           No hay usuarios registrados aún.
         </p>
       )}
 
-      {data?.map((user) => (
+      {filtered.map((user) => (
         <UserCard
           key={user.id}
           user={user}
@@ -112,3 +139,4 @@ export default function UsuariosPage() {
     </div>
   );
 }
+
