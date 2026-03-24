@@ -57,5 +57,60 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
 }
 
 export default function DestinosPage() {
-  return null;
+  const [showCreate, setShowCreate] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["destinations"],
+    queryFn: async () => {
+      const res = await getDestinations();
+      return res.data;
+    },
+  });
+
+  if (isLoading) return <Spinner />;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+        <div>
+          <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-text)" }}>
+            Destinos
+          </div>
+          <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
+            {data?.length ?? 0} destinos en total
+          </div>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{
+            padding: "8px 14px",
+            background: "#0369a1",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "12px",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          + Nuevo destino
+        </button>
+      </div>
+
+      {!data?.length && (
+        <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "13px", marginTop: "40px" }}>
+          No hay destinos registrados aún.
+        </p>
+      )}
+
+      {data?.map((destination) => (
+        <DestinationCard
+          key={destination.id}
+          destination={destination}
+          onEdit={() => setSelectedDestination(destination)}
+        />
+      ))}
+    </div>
+  );
 }
