@@ -26,7 +26,7 @@ function QrCamera({ onScan, onPermissionError }) {
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 12, qrbox: { width: 230, height: 230 } },
+        { fps: 12, qrbox: false },
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();

@@ -38,7 +38,7 @@ function QrCamera({ onScan, onPermissionError }) {
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 10, qrbox: false },
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();
@@ -279,7 +279,7 @@ function QRTab() {
           Cámara
         </button>
         <button style={tabStyle(qrMode === "teclado")} onClick={() => handleSwitchQrMode("teclado")}>
-          ID / Escáner
+          ID
         </button>
       </div>
 
