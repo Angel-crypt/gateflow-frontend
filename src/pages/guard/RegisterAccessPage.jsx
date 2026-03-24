@@ -17,20 +17,20 @@ function useDestinations() {
 }
 
 // ── Cámara QR ────────────────────────────────────────────────
-const SCANNER_ID = "qr-camera-feed";
+const SCANNER_ID = "qr-camera-feed-register";
 
 function QrCamera({ onScan, onPermissionError }) {
   const scannerRef = useRef(null);
   const scannedRef = useRef(false);
-  const startingRef = useRef(false); // evita doble init en StrictMode
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (startingRef.current) return;
-    startingRef.current = true;
+    if (scannerRef.current?.isScanning) return;
 
-    // Limpiar contenido previo (fix para StrictMode / remounts)
-    const container = document.getElementById(SCANNER_ID);
-    if (container) container.innerHTML = "";
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.innerHTML = "";
 
     const scanner = new Html5Qrcode(SCANNER_ID, { verbose: false });
     scannerRef.current = scanner;
@@ -46,15 +46,13 @@ function QrCamera({ onScan, onPermissionError }) {
           scannedRef.current = true;
           scanner.stop().catch(() => {}).finally(() => onScan(id));
         },
-        () => {} // frames sin QR — ignorar
+        () => {}
       )
       .catch(() => {
-        startingRef.current = false;
         onPermissionError();
       });
 
     return () => {
-      startingRef.current = false;
       if (scannerRef.current?.isScanning) {
         scannerRef.current.stop().catch(() => {});
       }
@@ -65,15 +63,16 @@ function QrCamera({ onScan, onPermissionError }) {
     <div style={{ position: "relative", width: "100%" }}>
       <div
         id={SCANNER_ID}
+        ref={containerRef}
         style={{
           width: "100%",
           borderRadius: "10px",
           overflow: "hidden",
           background: "#000",
           minHeight: "250px",
-          // Ocultar controles extra que inyecta html5-qrcode
           lineHeight: 0,
         }}
+        className="qr-scanner-container"
       />
       {/* Marco de guía */}
       <div
