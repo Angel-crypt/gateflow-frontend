@@ -50,11 +50,39 @@ function UserCard({ user, onEdit, onToggle, onDelete }) {
       <div style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "2px" }}>
         {user.park?.name ?? "—"}
       </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+        <button
+          onClick={() => onEdit(user)}
+          style={{
+            flex: 1, padding: "7px",
+            background: "var(--color-surface)",
+            color: "var(--color-text)",
+            border: "0.5px solid var(--color-border)",
+            borderRadius: "7px", fontSize: "12px",
+            fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          Editar
+        </button>
+        <button
+          onClick={() => onToggle(user)}
+          style={{
+            flex: 1, padding: "7px",
+            background: isActive ? "#fef3c7" : "#dcfce7",
+            color: isActive ? "#b45309" : "#16a34a",
+            border: "none", borderRadius: "7px",
+            fontSize: "12px", fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          {isActive ? "Desactivar" : "Activar"}
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function UsuariosPage() {
+  const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [roleFilter, setRoleFilter] = useState("all");
@@ -65,6 +93,11 @@ export default function UsuariosPage() {
       const res = await getUsers();
       return res.data;
     },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (user) => toggleActiveUser(user.id, !user.is_active),
+    onSuccess: () => queryClient.invalidateQueries(["users"]),
   });
 
   const filtered = data?.filter((u) =>
@@ -134,9 +167,9 @@ export default function UsuariosPage() {
           key={user.id}
           user={user}
           onEdit={() => setSelectedUser(user)}
+          onToggle={(u) => toggleMutation.mutate(u)}
         />
       ))}
     </div>
   );
 }
-
