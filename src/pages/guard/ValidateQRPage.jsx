@@ -26,7 +26,7 @@ function QrCamera({ onScan, onPermissionError }) {
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 12, qrbox: false },
+        { fps: 12, qrbox: { width: 250, height: 250 } },
         (decoded) => {
           if (scannedRef.current) return;
           const id = decoded.trim();
@@ -55,10 +55,11 @@ function QrCamera({ onScan, onPermissionError }) {
         ref={containerRef}
         style={{
           width: "100%",
-          borderRadius: "10px",
+          aspectRatio: "1/1",
+          borderRadius: "12px",
           overflow: "hidden",
           background: "#000",
-          minHeight: "260px",
+          maxHeight: "350px",
         }}
         className="qr-scanner-container"
       />
@@ -69,24 +70,16 @@ function QrCamera({ onScan, onPermissionError }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "230px",
-          height: "230px",
-          border: "2px solid rgba(255,255,255,0.6)",
-          borderRadius: "12px",
-          boxShadow: "0 0 0 9999px rgba(0,0,0,0.35)",
+          width: "70%",
+          height: "70%",
+          maxWidth: "280px",
+          maxHeight: "280px",
+          border: "3px solid #0369a1",
+          borderRadius: "16px",
+          boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)",
           pointerEvents: "none",
         }}
-      >
-        {/* Esquinas */}
-        {[
-          { top: -2, left: -2, borderTop: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "10px 0 0 0" },
-          { top: -2, right: -2, borderTop: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 10px 0 0" },
-          { bottom: -2, left: -2, borderBottom: "3px solid #0369a1", borderLeft: "3px solid #0369a1", borderRadius: "0 0 0 10px" },
-          { bottom: -2, right: -2, borderBottom: "3px solid #0369a1", borderRight: "3px solid #0369a1", borderRadius: "0 0 10px 0" },
-        ].map((s, i) => (
-          <div key={i} style={{ position: "absolute", width: "20px", height: "20px", ...s }} />
-        ))}
-      </div>
+      />
       <div style={{
         position: "absolute", bottom: "12px", left: 0, right: 0,
         textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.8)",
