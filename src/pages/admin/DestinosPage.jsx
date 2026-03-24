@@ -52,11 +52,39 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
       <div style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "2px" }}>
         {destination.park?.name ?? "—"}
       </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+        <button
+          onClick={() => onEdit(destination)}
+          style={{
+            flex: 1, padding: "7px",
+            background: "var(--color-surface)",
+            color: "var(--color-text)",
+            border: "0.5px solid var(--color-border)",
+            borderRadius: "7px", fontSize: "12px",
+            fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          Editar
+        </button>
+        <button
+          onClick={() => onToggle(destination)}
+          style={{
+            flex: 1, padding: "7px",
+            background: isActive ? "#fef3c7" : "#dcfce7",
+            color: isActive ? "#b45309" : "#16a34a",
+            border: "none", borderRadius: "7px",
+            fontSize: "12px", fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          {isActive ? "Desactivar" : "Activar"}
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function DestinosPage() {
+  const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [typeFilter, setTypeFilter] = useState("all");
@@ -67,6 +95,11 @@ export default function DestinosPage() {
       const res = await getDestinations();
       return res.data;
     },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (destination) => toggleActiveDestination(destination.id, !destination.is_active),
+    onSuccess: () => queryClient.invalidateQueries(["destinations"]),
   });
 
   const filtered = data?.filter((d) =>
@@ -136,6 +169,7 @@ export default function DestinosPage() {
           key={destination.id}
           destination={destination}
           onEdit={() => setSelectedDestination(destination)}
+          onToggle={(d) => toggleMutation.mutate(d)}
         />
       ))}
     </div>
