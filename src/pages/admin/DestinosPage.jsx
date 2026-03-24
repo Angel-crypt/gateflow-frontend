@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getDestinations, toggleActiveDestination, deleteDestination } from "../../api/destinations.api";
 import { Spinner } from "../../components/Spinner";
+import CreateDestinationModal from "./CreateDestinationModal";
+import EditDestinationModal from "./EditDestinationModal";
 
 function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
   const isActive = destination.is_active;
@@ -191,6 +193,18 @@ export default function DestinosPage() {
           onDelete={(id) => deleteMutation.mutate(id)}
         />
       ))}
+
+      {showCreate && (
+        <CreateDestinationModal onClose={() => setShowCreate(false)} />
+      )}
+
+      {selectedDestination && (
+        <EditDestinationModal
+          destination={selectedDestination}
+          onClose={() => setSelectedDestination(null)}
+        />
+      )}
     </div>
   );
 }
+
