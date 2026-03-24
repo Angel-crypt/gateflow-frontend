@@ -11,3 +11,6 @@ export const createUser = (data) =>
 
 export const updateUser = (id, data) =>
   apiClient.patch(`/users/${id}/`, data);
+
+export const deleteUser = (id) =>
+  apiClient.delete(`/users/${id}/`);
