@@ -78,6 +78,19 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
         >
           {isActive ? "Desactivar" : "Activar"}
         </button>
+        <button
+          onClick={() => onDelete(destination.id)}
+          style={{
+            padding: "7px 12px",
+            background: "var(--color-surface)",
+            color: "#dc2626",
+            border: "0.5px solid #fecaca",
+            borderRadius: "7px", fontSize: "12px",
+            cursor: "pointer",
+          }}
+        >
+          Eliminar
+        </button>
       </div>
     </div>
   );
@@ -99,6 +112,11 @@ export default function DestinosPage() {
 
   const toggleMutation = useMutation({
     mutationFn: (destination) => toggleActiveDestination(destination.id, !destination.is_active),
+    onSuccess: () => queryClient.invalidateQueries(["destinations"]),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteDestination(id),
     onSuccess: () => queryClient.invalidateQueries(["destinations"]),
   });
 
@@ -170,6 +188,7 @@ export default function DestinosPage() {
           destination={destination}
           onEdit={() => setSelectedDestination(destination)}
           onToggle={(d) => toggleMutation.mutate(d)}
+          onDelete={(id) => deleteMutation.mutate(id)}
         />
       ))}
     </div>
