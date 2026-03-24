@@ -1,16 +1,15 @@
-import { createContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { login as loginApi, logout as logoutApi, getMe } from "../api/auth.api";
+import { AuthContext } from "./context";
 
-export const AuthContext = createContext(null);
-
-export function AuthProvider({ children }) {
+function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      setLoading(false);
+      setLoading(false); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
     getMe()
@@ -40,3 +39,6 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+export { AuthContext };
+export default AuthProvider;
