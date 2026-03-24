@@ -13,6 +13,12 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
 
   const typeLabel = destination.type === "company" ? "Empresa" : "Área";
 
+  const statusStyle = isActive
+    ? { background: "#dcfce7", color: "#16a34a" }
+    : { background: "#f1f5f9", color: "#64748b" };
+
+  const statusLabel = isActive ? "Activo" : "Inactivo";
+
   return (
     <div
       style={{
@@ -34,9 +40,17 @@ function DestinationCard({ destination, onEdit, onToggle, onDelete }) {
               : "Sin responsable"}
           </div>
         </div>
-        <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "999px", ...typeStyle }}>
-          {typeLabel}
-        </span>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "999px", ...typeStyle }}>
+            {typeLabel}
+          </span>
+          <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "999px", ...statusStyle }}>
+            {statusLabel}
+          </span>
+        </div>
+      </div>
+      <div style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "2px" }}>
+        {destination.park?.name ?? "—"}
       </div>
     </div>
   );
