@@ -101,21 +101,27 @@ a:hover { color: var(--color-primary-hover); }
   position: relative;
 }
 
-.qr-scanner-container > video,
-.qr-scanner-container > img {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-}
-
 .qr-scanner-container video,
 .qr-scanner-container img {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.qr-scanner-container > video,
+.qr-scanner-container > img {
+  display: block;
 }
 
 .qr-scanner-container > video:nth-of-type(n+2),
 .qr-scanner-container > img:nth-of-type(n+2) {
+  display: none !important;
+}
+
+/* Ocultar elementos de ui de html5-qrcode */
+.qr-scanner-container > div:not(#qr-camera-feed-validate):not(#qr-camera-feed-register) {
   display: none !important;
 }
