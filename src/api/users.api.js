@@ -8,3 +8,6 @@ export const getUser = (id) =>
 
 export const createUser = (data) =>
   apiClient.post("/users/", data);
+
+export const updateUser = (id, data) =>
+  apiClient.patch(`/users/${id}/`, data);
