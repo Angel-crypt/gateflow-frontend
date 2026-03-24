@@ -95,3 +95,27 @@ a:hover { color: var(--color-primary-hover); }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── QR Scanner fix ─────────────────────────────────────── */
+.qr-scanner-container {
+  position: relative;
+}
+
+.qr-scanner-container > video,
+.qr-scanner-container > img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.qr-scanner-container video,
+.qr-scanner-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.qr-scanner-container > video:nth-of-type(n+2),
+.qr-scanner-container > img:nth-of-type(n+2) {
+  display: none !important;
+}
