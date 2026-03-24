@@ -8,3 +8,6 @@ export const getDestination = (id) =>
 
 export const createDestination = (data) =>
   apiClient.post("/destinations/", data);
+
+export const updateDestination = (id, data) =>
+  apiClient.patch(`/destinations/${id}/`, data);
