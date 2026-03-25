@@ -106,7 +106,7 @@ export default function UsuariosPage() {
     queryKey: ["users"],
     queryFn: async () => {
       const res = await getUsers();
-      return res.data;
+      return Array.isArray(res.data) ? res.data : res.data.results;
     },
   });
 

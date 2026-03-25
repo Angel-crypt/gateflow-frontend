@@ -108,7 +108,7 @@ export default function DestinosPage() {
     queryKey: ["destinations"],
     queryFn: async () => {
       const res = await getDestinations();
-      return res.data;
+      return Array.isArray(res.data) ? res.data : res.data.results;
     },
   });
 

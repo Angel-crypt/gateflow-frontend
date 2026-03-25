@@ -1,19 +1,19 @@
 import apiClient from "./apiClient";
 
 export const getUsers = () =>
-  apiClient.get("/users/");
+  apiClient.get("/api/users/");
 
 export const getUser = (id) =>
-  apiClient.get(`/users/${id}/`);
+  apiClient.get(`/api/users/${id}/`);
 
 export const createUser = (data) =>
-  apiClient.post("/users/", data);
+  apiClient.post("/api/users/", data);
 
 export const updateUser = (id, data) =>
-  apiClient.patch(`/users/${id}/`, data);
+  apiClient.patch(`/api/users/${id}/`, data);
 
 export const deleteUser = (id) =>
-  apiClient.delete(`/users/${id}/`);
+  apiClient.delete(`/api/users/${id}/`);
 
 export const toggleActiveUser = (id, isActive) =>
-  apiClient.patch(`/users/${id}/`, { is_active: isActive });
+  apiClient.patch(`/api/users/${id}/`, { is_active: isActive });
