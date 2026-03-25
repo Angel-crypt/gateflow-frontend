@@ -7,11 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/auth': {
-        target: 'http://localhost:8000',
+        target: 'http://192.168.59.243:8000',
         changeOrigin: true,
+        rewrite: (path) => `/api${path}`,
       },
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://192.168.59.243:8000',
         changeOrigin: true,
       },
     },
