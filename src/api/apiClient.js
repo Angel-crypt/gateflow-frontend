@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await apiClient.post("/auth/refresh/", {
+        const { data } = await apiClient.post("/api/auth/refresh/", {
           refresh: refreshToken,
         });
         localStorage.setItem("access_token", data.access);
