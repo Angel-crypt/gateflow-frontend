@@ -15,7 +15,7 @@ export default function EditDestinationModal({ destination, onClose }) {
     queryKey: ["users"],
     queryFn: async () => {
       const res = await getUsers();
-      return res.data;
+      return res.data.results ?? res.data;
     },
   });
 
