@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "VITE_DEV_HTTPS=true vite",
     "dev:host": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
