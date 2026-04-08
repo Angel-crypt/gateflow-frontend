@@ -114,9 +114,26 @@ Define todas las rutas de la aplicación. Incluye un componente `ProtectedRoute`
 Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=https://localhost:8000
+VITE_DEV_HTTPS=true
 ```
 
 Para producción, crea `.env.production` con la URL del backend desplegado.
+
+Ejemplo producción (Vercel + backend externo):
+
+```env
+VITE_API_BASE_URL=https://api.tu-dominio.com
+```
+
+## HTTPS local y cámara
+
+Para ejecutar frontend local con HTTPS (recomendado para pruebas con cámara):
+
+```bash
+npm run dev:https
+```
+
+Este comando activa TLS local en Vite mediante certificado de desarrollo.
 
 > Los archivos `.env` no se suben al repositorio. Están incluidos en `.gitignore`.
