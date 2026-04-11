@@ -432,6 +432,61 @@ export default function DashboardPage() {
       {/* ── Tabla combinada de accesos ── */}
       <section className="dash__section">
         <SectionHeader icon={Table2}>Registro de accesos</SectionHeader>
+
+        {/* Filtros */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+          <select
+            value={tableFilters.access_type}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, access_type: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          >
+            <option value="">Todos los tipos</option>
+            <option value="qr">QR</option>
+            <option value="manual">Manual</option>
+          </select>
+
+          <select
+            value={tableFilters.status}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, status: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          >
+            <option value="">Todos los estados</option>
+            <option value="open">Activo</option>
+            <option value="closed">Cerrado</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Destino"
+            value={tableFilters.destination}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, destination: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", width: "140px" }}
+          />
+
+          <input
+            type="date"
+            value={tableFilters.date_from}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, date_from: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          />
+
+          <input
+            type="date"
+            value={tableFilters.date_to}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, date_to: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          />
+
+          {Object.values(tableFilters).some((v) => v !== "") && (
+            <button
+              onClick={() => { setTableFilters({ access_type: "", status: "", destination: "", date_from: "", date_to: "" }); setTablePage(1); }}
+              style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text-muted)", cursor: "pointer" }}
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+
         <div style={{ overflowX: "auto" }}>
           {loadingTable ? (
             <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}><Spinner /></div>
