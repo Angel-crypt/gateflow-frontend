@@ -1,7 +1,7 @@
 import { useState, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2, Search, Filter, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { getPasses, deletePass, updatePass, exportPassesCSV } from "../../api/passes.api";
+import { getPasses, deletePass, updatePass, exportPassesCSV, exportPassesPDF } from "../../api/passes.api";
 import { getAccessLogs } from "../../api/access.api";
 import apiClient from "../../api/apiClient";
 import { Spinner } from "../../components/Spinner";
@@ -313,6 +313,16 @@ export default function PasesPage() {
     URL.revokeObjectURL(link.href);
   };
 
+  const exportToPDF = async () => {
+    const res = await exportPassesPDF(buildExportParams());
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `pases_${new Date().toISOString().split("T")[0]}.pdf`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   if (isLoading || loadingAccessLogs) return <Spinner />;
 
   return (
@@ -435,6 +445,15 @@ export default function PasesPage() {
             <Download size={14} />
             CSV
           </button>
+          {user?.role === "admin" && (
+            <button
+              onClick={exportToPDF}
+              style={{ padding: "6px 10px", background: "var(--color-bg)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+            >
+              <Download size={14} />
+              PDF
+            </button>
+          )}
           <button onClick={() => setViewMode(viewMode === "list" ? "grid" : "list")} style={{ padding: "6px 10px", background: "var(--color-bg)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer" }}>
             {viewMode === "list" ? "▦ Grid" : "☰ Lista"}
           </button>
