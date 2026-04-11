@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { getAccessLogs, exportAccessLogsCSV } from "../../api/access.api";
+import { getAccessLogs, exportAccessLogsCSV, exportAccessLogsPDF } from "../../api/access.api";
+import { useAuth } from "../../auth/useAuth";
 import { Spinner } from "../../components/Spinner";
 
 const ITEMS_PER_PAGE = 20;
@@ -154,6 +155,7 @@ function AccessCard({ log, viewMode }) {
 }
 
 export default function AccesosPage() {
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState("list");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -264,6 +266,16 @@ export default function AccesosPage() {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `accesos_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const exportToPDF = async () => {
+    const res = await exportAccessLogsPDF(buildExportParams());
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `accesos_${new Date().toISOString().split("T")[0]}.pdf`;
     link.click();
     URL.revokeObjectURL(link.href);
   };
@@ -406,6 +418,25 @@ export default function AccesosPage() {
             <Download size={14} />
             CSV
           </button>
+          {user?.role === "admin" && (
+            <button
+              onClick={exportToPDF}
+              style={{
+                padding: "6px 10px",
+                background: "var(--color-bg)",
+                border: "0.5px solid var(--color-border)",
+                borderRadius: "6px",
+                fontSize: "12px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <Download size={14} />
+              PDF
+            </button>
+          )}
           <button
             onClick={() => setViewMode(viewMode === "list" ? "grid" : "list")}
             style={{
