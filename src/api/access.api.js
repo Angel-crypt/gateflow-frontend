@@ -11,3 +11,9 @@ export const createAccessLog = (data) =>
 
 export const registerExit = (id) =>
   apiClient.post(`/api/access-logs/${id}/register-exit/`);
+
+export const exportAccessLogsCSV = (params = {}) =>
+  apiClient.get("/api/access-logs/export/", { params, responseType: "blob" });
+
+export const exportAccessLogsPDF = (params = {}) =>
+  apiClient.get("/api/access-logs/export/pdf/", { params, responseType: "blob" });

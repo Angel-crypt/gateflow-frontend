@@ -17,3 +17,9 @@ export const deletePass = (id) =>
 
 export const validatePass = (passId) =>
   apiClient.post("/api/passes/validate/", { pass_id: Number(passId) });
+
+export const exportPassesCSV = (params = {}) =>
+  apiClient.get("/api/passes/export/", { params, responseType: "blob" });
+
+export const exportPassesPDF = (params = {}) =>
+  apiClient.get("/api/passes/export/pdf/", { params, responseType: "blob" });

@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import {
   DoorOpen, Ticket, Activity, Users,
   QrCode, PenLine,
-  MapPin, TrendingUp, RefreshCw,
+  MapPin, TrendingUp, RefreshCw, Table2, Download,
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-import { getDashboard, getAccessLogMetrics, getPassMetrics } from "../../api/metrics.api";
+import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable, exportAccessTableCSV, exportAccessTablePDF, getHealthCheck } from "../../api/metrics.api";
 import { Spinner } from "../../components/Spinner";
 import "./DashboardPage.css";
 
@@ -146,6 +146,11 @@ export default function DashboardPage() {
   // Timestamp visible del último refresh — da confianza en el dato "en vivo"
   const [lastRefresh, setLastRefresh] = useState(() => new Date());
 
+  // Access table state
+  const [tableFilters, setTableFilters] = useState({ access_type: "", status: "", destination: "", date_from: "", date_to: "" });
+  const [tablePage, setTablePage] = useState(1);
+  const [tableOrdering, setTableOrdering] = useState("-entry_time");
+
   const { data: dash, isLoading: loadingDash, refetch: refetchDash } = useQuery({
     queryKey: ["metrics-dashboard"],
     queryFn: () => getDashboard().then((r) => r.data),
@@ -159,6 +164,21 @@ export default function DashboardPage() {
   const { data: passes, isLoading: loadingPasses } = useQuery({
     queryKey: ["metrics-passes"],
     queryFn: () => getPassMetrics().then((r) => r.data),
+  });
+
+  const { data: health } = useQuery({
+    queryKey: ["health"],
+    queryFn: () => getHealthCheck().then((r) => r.data).catch(() => null),
+    refetchInterval: 30000,
+    retry: false,
+  });
+
+  const activeTableFilters = Object.fromEntries(
+    Object.entries({ ...tableFilters, page: tablePage, ordering: tableOrdering }).filter(([, v]) => v !== "")
+  );
+  const { data: accessTable, isLoading: loadingTable } = useQuery({
+    queryKey: ["metrics-access-table", activeTableFilters],
+    queryFn: () => getAccessTable(activeTableFilters).then((r) => r.data),
   });
 
   const loading = loadingDash;
@@ -179,6 +199,10 @@ export default function DashboardPage() {
         </div>
         {/* Acciones del header con clase CSS en lugar de estilos inline */}
         <div className="dash__header-actions">
+          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: health ? "var(--color-success)" : "#dc2626" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: health ? "var(--color-success)" : "#dc2626", display: "inline-block" }} />
+            {health ? "Backend activo" : "Sin conexión"}
+          </span>
           <span className="dash__refresh-time">
             Actualizado {fmtTime(lastRefresh)}
           </span>
@@ -414,6 +438,196 @@ export default function DashboardPage() {
 
           </div>
         </div>
+      </section>
+
+      {/* ── Tabla combinada de accesos ── */}
+      <section className="dash__section">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <SectionHeader icon={Table2}>Registro de accesos</SectionHeader>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={async () => {
+                const res = await exportAccessTableCSV(activeTableFilters);
+                const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `accesos_${new Date().toISOString().split("T")[0]}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+              }}
+              style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+            >
+              <Download size={13} />
+              CSV
+            </button>
+            {user?.role === "admin" && (
+              <button
+                onClick={async () => {
+                  const res = await exportAccessTablePDF(activeTableFilters);
+                  const blob = new Blob([res.data], { type: "application/pdf" });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `accesos_${new Date().toISOString().split("T")[0]}.pdf`;
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+                style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <Download size={13} />
+                PDF
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+          <select
+            value={tableFilters.access_type}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, access_type: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          >
+            <option value="">Todos los tipos</option>
+            <option value="qr">QR</option>
+            <option value="manual">Manual</option>
+          </select>
+
+          <select
+            value={tableFilters.status}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, status: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          >
+            <option value="">Todos los estados</option>
+            <option value="open">Activo</option>
+            <option value="closed">Cerrado</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Destino"
+            value={tableFilters.destination}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, destination: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", width: "140px" }}
+          />
+
+          <input
+            type="date"
+            value={tableFilters.date_from}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, date_from: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          />
+
+          <input
+            type="date"
+            value={tableFilters.date_to}
+            onChange={(e) => { setTableFilters((f) => ({ ...f, date_to: e.target.value })); setTablePage(1); }}
+            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+          />
+
+          {Object.values(tableFilters).some((v) => v !== "") && (
+            <button
+              onClick={() => { setTableFilters({ access_type: "", status: "", destination: "", date_from: "", date_to: "" }); setTablePage(1); }}
+              style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text-muted)", cursor: "pointer" }}
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          {loadingTable ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}><Spinner /></div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                  {[
+                    { label: "ID",        key: "id" },
+                    { label: "Visitante", key: "visitor_name" },
+                    { label: "Placa",     key: "plate" },
+                    { label: "Destino",   key: "destination" },
+                    { label: "Tipo",      key: "access_type" },
+                    { label: "ID Pase",   key: "pass_id" },
+                    { label: "Tipo pase", key: "pass_type" },
+                    { label: "Guardia",   key: "guard" },
+                    { label: "Entrada",   key: "entry_time" },
+                    { label: "Salida",    key: "exit_time" },
+                    { label: "Estado",    key: "status" },
+                  ].map(({ label, key }) => {
+                    const isActive = tableOrdering === key || tableOrdering === `-${key}`;
+                    const isDesc = tableOrdering === `-${key}`;
+                    return (
+                      <th
+                        key={key}
+                        onClick={() => {
+                          setTableOrdering(isActive && !isDesc ? `-${key}` : key);
+                          setTablePage(1);
+                        }}
+                        style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: isActive ? "var(--color-text)" : "var(--color-text-muted)", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" }}
+                      >
+                        {label}{isActive ? (isDesc ? " ↓" : " ↑") : ""}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {accessTable?.results?.length ? (
+                  accessTable.results.map((row) => (
+                    <tr key={row.id} style={{ borderBottom: "0.5px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.id}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 500 }}>{row.visitor_name}</td>
+                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>{row.destination || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.access_type === "qr" ? "#e0f2fe" : "#fef3c7", color: row.access_type === "qr" ? "#0369a1" : "#b45309" }}>
+                          {row.access_type === "qr" ? "QR" : "Manual"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.pass_id || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>{row.pass_type || "—"}</td>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard || "—"}</td>
+                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.status === "open" ? "#dcfce7" : "#f1f5f9", color: row.status === "open" ? "#16a34a" : "#64748b" }}>
+                          {row.status === "open" ? "Activo" : "Cerrado"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={11} style={{ padding: "32px", textAlign: "center", color: "var(--color-text-muted)" }}>
+                      No hay registros.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Paginación */}
+        {(accessTable?.next || accessTable?.previous) && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--color-text-muted)" }}>
+            <button
+              onClick={() => setTablePage((p) => p - 1)}
+              disabled={!accessTable?.previous}
+              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.previous ? "pointer" : "default", opacity: accessTable?.previous ? 1 : 0.4 }}
+            >
+              ← Anterior
+            </button>
+            <span>Página {tablePage} · {accessTable?.count ?? 0} registros</span>
+            <button
+              onClick={() => setTablePage((p) => p + 1)}
+              disabled={!accessTable?.next}
+              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.next ? "pointer" : "default", opacity: accessTable?.next ? 1 : 0.4 }}
+            >
+              Siguiente →
+            </button>
+          </div>
+        )}
       </section>
 
     </div>

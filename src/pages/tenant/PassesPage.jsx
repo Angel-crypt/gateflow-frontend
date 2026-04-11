@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getPasses, deletePass, updatePass } from "../../api/passes.api";
+import { getPasses, deletePass, updatePass, exportPassesCSV } from "../../api/passes.api";
+import { Download } from "lucide-react";
 import { Spinner } from "../../components/Spinner";
 import CreatePassModal from "./CreatePassModal";
 import QRModal from "./QRModal";
@@ -121,20 +122,43 @@ export default function PassesPage() {
     onSuccess: () => queryClient.invalidateQueries(["passes"]),
   });
 
+  const exportToCSV = async () => {
+    const res = await exportPassesCSV();
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `mis_pases_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   if (isLoading) return <Spinner />;
 
   return (
     <>
-      <button
-        onClick={() => setShowCreate(true)}
-        style={{
-          width: "100%", padding: "12px", background: "#0369a1",
-          color: "#fff", border: "none", borderRadius: "8px",
-          fontSize: "13px", fontWeight: 500, cursor: "pointer",
-        }}
-      >
-        + Nuevo pase
-      </button>
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{
+            flex: 1, padding: "12px", background: "#0369a1",
+            color: "#fff", border: "none", borderRadius: "8px",
+            fontSize: "13px", fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          + Nuevo pase
+        </button>
+        <button
+          onClick={exportToCSV}
+          style={{
+            padding: "12px 14px", background: "var(--color-surface)",
+            border: "0.5px solid var(--color-border)", borderRadius: "8px",
+            fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
+          }}
+        >
+          <Download size={14} />
+          CSV
+        </button>
+      </div>
 
       {!data?.length && (
         <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "13px", marginTop: "40px" }}>
