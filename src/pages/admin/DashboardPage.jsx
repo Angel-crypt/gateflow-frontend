@@ -552,6 +552,27 @@ export default function DashboardPage() {
             </table>
           )}
         </div>
+
+        {/* Paginación */}
+        {(accessTable?.next || accessTable?.previous) && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--color-text-muted)" }}>
+            <button
+              onClick={() => setTablePage((p) => p - 1)}
+              disabled={!accessTable?.previous}
+              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.previous ? "pointer" : "default", opacity: accessTable?.previous ? 1 : 0.4 }}
+            >
+              ← Anterior
+            </button>
+            <span>Página {tablePage} · {accessTable?.count ?? 0} registros</span>
+            <button
+              onClick={() => setTablePage((p) => p + 1)}
+              disabled={!accessTable?.next}
+              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.next ? "pointer" : "default", opacity: accessTable?.next ? 1 : 0.4 }}
+            >
+              Siguiente →
+            </button>
+          </div>
+        )}
       </section>
 
     </div>
