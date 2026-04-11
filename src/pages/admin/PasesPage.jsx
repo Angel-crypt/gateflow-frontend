@@ -1,7 +1,7 @@
 import { useState, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
-import { getPasses, deletePass, updatePass } from "../../api/passes.api";
+import { Trash2, Search, Filter, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { getPasses, deletePass, updatePass, exportPassesCSV } from "../../api/passes.api";
 import { getAccessLogs } from "../../api/access.api";
 import apiClient from "../../api/apiClient";
 import { Spinner } from "../../components/Spinner";
@@ -280,6 +280,39 @@ export default function PasesPage() {
     return Array.from(dests.values());
   }, [data]);
 
+  const buildExportParams = () => {
+    const params = {};
+    if (statusFilter === "inactive") params.is_active = false;
+    if (statusFilter === "available" || statusFilter === "active") params.is_active = true;
+    if (destinationFilter !== "all") params.destination = destinationFilter;
+    if (dateFilter !== "all") {
+      const now = new Date();
+      if (dateFilter === "today") {
+        const start = new Date(now); start.setHours(0, 0, 0, 0);
+        params.date_from = start.toISOString();
+      } else if (dateFilter === "week") {
+        params.date_from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      } else if (dateFilter === "month") {
+        params.date_from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      } else if (dateFilter === "expired") {
+        params.date_to = now.toISOString();
+      } else if (dateFilter === "future") {
+        params.date_from = now.toISOString();
+      }
+    }
+    return params;
+  };
+
+  const exportToCSV = async () => {
+    const res = await exportPassesCSV(buildExportParams());
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `pases_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   if (isLoading || loadingAccessLogs) return <Spinner />;
 
   return (
@@ -395,6 +428,13 @@ export default function PasesPage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={exportToCSV}
+            style={{ padding: "6px 10px", background: "var(--color-bg)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+          >
+            <Download size={14} />
+            CSV
+          </button>
           <button onClick={() => setViewMode(viewMode === "list" ? "grid" : "list")} style={{ padding: "6px 10px", background: "var(--color-bg)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer" }}>
             {viewMode === "list" ? "▦ Grid" : "☰ Lista"}
           </button>
