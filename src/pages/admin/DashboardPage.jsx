@@ -7,7 +7,7 @@ import {
   MapPin, TrendingUp, RefreshCw,
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-import { getDashboard, getAccessLogMetrics, getPassMetrics } from "../../api/metrics.api";
+import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable } from "../../api/metrics.api";
 import { Spinner } from "../../components/Spinner";
 import "./DashboardPage.css";
 
@@ -146,6 +146,11 @@ export default function DashboardPage() {
   // Timestamp visible del último refresh — da confianza en el dato "en vivo"
   const [lastRefresh, setLastRefresh] = useState(() => new Date());
 
+  // Access table state
+  const [tableFilters, setTableFilters] = useState({ access_type: "", status: "", destination: "", date_from: "", date_to: "" });
+  const [tablePage, setTablePage] = useState(1);
+  const [tableOrdering, setTableOrdering] = useState("-entry_time");
+
   const { data: dash, isLoading: loadingDash, refetch: refetchDash } = useQuery({
     queryKey: ["metrics-dashboard"],
     queryFn: () => getDashboard().then((r) => r.data),
@@ -159,6 +164,14 @@ export default function DashboardPage() {
   const { data: passes, isLoading: loadingPasses } = useQuery({
     queryKey: ["metrics-passes"],
     queryFn: () => getPassMetrics().then((r) => r.data),
+  });
+
+  const activeTableFilters = Object.fromEntries(
+    Object.entries({ ...tableFilters, page: tablePage, ordering: tableOrdering }).filter(([, v]) => v !== "")
+  );
+  const { data: accessTable, isLoading: loadingTable } = useQuery({
+    queryKey: ["metrics-access-table", activeTableFilters],
+    queryFn: () => getAccessTable(activeTableFilters).then((r) => r.data),
   });
 
   const loading = loadingDash;
