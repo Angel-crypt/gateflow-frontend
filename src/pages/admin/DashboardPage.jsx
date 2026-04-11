@@ -7,7 +7,7 @@ import {
   MapPin, TrendingUp, RefreshCw, Table2, Download,
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable, exportAccessTableCSV } from "../../api/metrics.api";
+import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable, exportAccessTableCSV, exportAccessTablePDF } from "../../api/metrics.api";
 import { Spinner } from "../../components/Spinner";
 import "./DashboardPage.css";
 
@@ -449,6 +449,23 @@ export default function DashboardPage() {
               <Download size={13} />
               CSV
             </button>
+            {user?.role === "admin" && (
+              <button
+                onClick={async () => {
+                  const res = await exportAccessTablePDF(activeTableFilters);
+                  const blob = new Blob([res.data], { type: "application/pdf" });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `accesos_${new Date().toISOString().split("T")[0]}.pdf`;
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+                style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <Download size={13} />
+                PDF
+              </button>
+            )}
           </div>
         </div>
 
