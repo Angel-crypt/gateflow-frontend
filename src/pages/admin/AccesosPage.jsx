@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { getAccessLogs } from "../../api/access.api";
+import { getAccessLogs, exportAccessLogsCSV } from "../../api/access.api";
 import { Spinner } from "../../components/Spinner";
 
 const ITEMS_PER_PAGE = 20;
@@ -232,25 +232,40 @@ export default function AccesosPage() {
     return Array.from(dests.values());
   }, [data]);
 
-  const exportToCSV = () => {
-    const headers = ["Fecha entrada", "Fecha salida", "Visitante", "Placa", "Destino", "Tipo", "Estado", "Guardia"];
-    const rows = filteredLogs.map(log => [
-      new Date(log.entry_time).toLocaleString("es-MX"),
-      log.exit_time ? new Date(log.exit_time).toLocaleString("es-MX") : "—",
-      log.visitor_name,
-      log.plate || "—",
-      log.destination?.name || "—",
-      log.access_type === "qr" ? "QR" : "Manual",
-      log.status === "open" ? "Activo" : "Cerrado",
-      log.guard?.email || "—",
-    ]);
+  const buildExportParams = () => {
+    const params = {};
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (typeFilter !== "all") params.access_type = typeFilter;
+    if (destinationFilter !== "all") params.destination = destinationFilter;
+    if (dateFilter !== "all") {
+      const now = new Date();
+      if (dateFilter === "today") {
+        const start = new Date(now); start.setHours(0, 0, 0, 0);
+        params.date_from = start.toISOString();
+      } else if (dateFilter === "yesterday") {
+        const start = new Date(now); start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0);
+        const end = new Date(now); end.setHours(0, 0, 0, 0);
+        params.date_from = start.toISOString();
+        params.date_to = end.toISOString();
+      } else if (dateFilter === "week") {
+        const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        params.date_from = start.toISOString();
+      } else if (dateFilter === "month") {
+        const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        params.date_from = start.toISOString();
+      }
+    }
+    return params;
+  };
 
-    const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const exportToCSV = async () => {
+    const res = await exportAccessLogsCSV(buildExportParams());
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `accesos_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   const open = filteredLogs.filter((l) => l.status === "open");
