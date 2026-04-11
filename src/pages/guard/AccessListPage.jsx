@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAccessLogs, registerExit } from "../../api/access.api";
+import { getAccessLogs, registerExit, exportAccessLogsCSV } from "../../api/access.api";
+import { Download } from "lucide-react";
 import { Spinner } from "../../components/Spinner";
 
 function timeSince(entryTime) {
@@ -27,6 +28,16 @@ export default function AccessListPage() {
 
   const open = data?.filter((l) => l.status === "open") ?? [];
 
+  const exportToCSV = async () => {
+    const res = await exportAccessLogsCSV({ status: "open" });
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `accesos_activos_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   if (isLoading) return <Spinner />;
 
   if (!open.length)
@@ -38,6 +49,18 @@ export default function AccessListPage() {
 
   return (
     <>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+        <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-text)" }}>
+          Accesos activos ({open.length})
+        </div>
+        <button
+          onClick={exportToCSV}
+          style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+        >
+          <Download size={14} />
+          CSV
+        </button>
+      </div>
       {open.map((log) => (
         <div
           key={log.id}
