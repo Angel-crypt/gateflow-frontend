@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   DoorOpen, Ticket, Activity, Users,
   QrCode, PenLine,
-  MapPin, TrendingUp, RefreshCw,
+  MapPin, TrendingUp, RefreshCw, Table2,
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
 import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable } from "../../api/metrics.api";
@@ -426,6 +426,76 @@ export default function DashboardPage() {
             )}
 
           </div>
+        </div>
+      </section>
+
+      {/* ── Tabla combinada de accesos ── */}
+      <section className="dash__section">
+        <SectionHeader icon={Table2}>Registro de accesos</SectionHeader>
+        <div style={{ overflowX: "auto" }}>
+          {loadingTable ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}><Spinner /></div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                  {[
+                    { label: "ID",        key: "id" },
+                    { label: "Visitante", key: "visitor_name" },
+                    { label: "Placa",     key: "plate" },
+                    { label: "Destino",   key: "destination" },
+                    { label: "Tipo",      key: "access_type" },
+                    { label: "ID Pase",   key: "pass_id" },
+                    { label: "Tipo pase", key: "pass_type" },
+                    { label: "Guardia",   key: "guard" },
+                    { label: "Entrada",   key: "entry_time" },
+                    { label: "Salida",    key: "exit_time" },
+                    { label: "Estado",    key: "status" },
+                  ].map(({ label, key }) => (
+                    <th
+                      key={key}
+                      style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "var(--color-text-muted)", whiteSpace: "nowrap" }}
+                    >
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {accessTable?.results?.length ? (
+                  accessTable.results.map((row) => (
+                    <tr key={row.id} style={{ borderBottom: "0.5px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.id}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 500 }}>{row.visitor_name}</td>
+                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>{row.destination || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.access_type === "qr" ? "#e0f2fe" : "#fef3c7", color: row.access_type === "qr" ? "#0369a1" : "#b45309" }}>
+                          {row.access_type === "qr" ? "QR" : "Manual"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.pass_id || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>{row.pass_type || "—"}</td>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard || "—"}</td>
+                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.status === "open" ? "#dcfce7" : "#f1f5f9", color: row.status === "open" ? "#16a34a" : "#64748b" }}>
+                          {row.status === "open" ? "Activo" : "Cerrado"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={11} style={{ padding: "32px", textAlign: "center", color: "var(--color-text-muted)" }}>
+                      No hay registros.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
 
