@@ -506,14 +506,22 @@ export default function DashboardPage() {
                     { label: "Entrada",   key: "entry_time" },
                     { label: "Salida",    key: "exit_time" },
                     { label: "Estado",    key: "status" },
-                  ].map(({ label, key }) => (
-                    <th
-                      key={key}
-                      style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "var(--color-text-muted)", whiteSpace: "nowrap" }}
-                    >
-                      {label}
-                    </th>
-                  ))}
+                  ].map(({ label, key }) => {
+                    const isActive = tableOrdering === key || tableOrdering === `-${key}`;
+                    const isDesc = tableOrdering === `-${key}`;
+                    return (
+                      <th
+                        key={key}
+                        onClick={() => {
+                          setTableOrdering(isActive && !isDesc ? `-${key}` : key);
+                          setTablePage(1);
+                        }}
+                        style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: isActive ? "var(--color-text)" : "var(--color-text-muted)", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" }}
+                      >
+                        {label}{isActive ? (isDesc ? " ↓" : " ↑") : ""}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
