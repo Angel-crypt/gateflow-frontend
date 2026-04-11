@@ -7,7 +7,7 @@ import {
   MapPin, TrendingUp, RefreshCw, Table2, Download,
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable, exportAccessTableCSV, exportAccessTablePDF } from "../../api/metrics.api";
+import { getDashboard, getAccessLogMetrics, getPassMetrics, getAccessTable, exportAccessTableCSV, exportAccessTablePDF, getHealthCheck } from "../../api/metrics.api";
 import { Spinner } from "../../components/Spinner";
 import "./DashboardPage.css";
 
@@ -166,6 +166,13 @@ export default function DashboardPage() {
     queryFn: () => getPassMetrics().then((r) => r.data),
   });
 
+  const { data: health } = useQuery({
+    queryKey: ["health"],
+    queryFn: () => getHealthCheck().then((r) => r.data).catch(() => null),
+    refetchInterval: 30000,
+    retry: false,
+  });
+
   const activeTableFilters = Object.fromEntries(
     Object.entries({ ...tableFilters, page: tablePage, ordering: tableOrdering }).filter(([, v]) => v !== "")
   );
@@ -192,6 +199,10 @@ export default function DashboardPage() {
         </div>
         {/* Acciones del header con clase CSS en lugar de estilos inline */}
         <div className="dash__header-actions">
+          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: health ? "var(--color-success)" : "#dc2626" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: health ? "var(--color-success)" : "#dc2626", display: "inline-block" }} />
+            {health ? "Backend activo" : "Sin conexión"}
+          </span>
           <span className="dash__refresh-time">
             Actualizado {fmtTime(lastRefresh)}
           </span>

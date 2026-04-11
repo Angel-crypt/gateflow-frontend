@@ -1,5 +1,8 @@
 import apiClient from "./apiClient";
 
+export const getHealthCheck = () =>
+  apiClient.get("/api/health/");
+
 export const getDashboard = () =>
   apiClient.get("/api/metrics/dashboard/");
 
