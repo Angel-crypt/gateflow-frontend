@@ -509,25 +509,10 @@ export default function DashboardPage() {
                   {/* Por tipo + por destino */}
                   <div className="analytics__right-col">
 
-                    {/* Por tipo — leyenda simplificada: solo dot + texto */}
+                    {/* Por tipo */}
                     <div>
                       <div className="analytics__sub-label">Por tipo</div>
-                      <div className="type-split">
-                        <div
-                          className="type-split__qr"
-                          style={{ width: `${pct(logs?.by_type?.qr, logs?.total)}%` }}
-                        />
-                      </div>
-                      <div className="type-legend">
-                        <div className="type-legend__item">
-                          <div className="type-legend__dot" style={{ background: "var(--color-primary)" }} />
-                          QR — {logs?.by_type?.qr ?? 0}
-                        </div>
-                        <div className="type-legend__item">
-                          <div className="type-legend__dot" style={{ background: "var(--color-warning)" }} />
-                          Manual — {logs?.by_type?.manual ?? 0}
-                        </div>
-                      </div>
+                      <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
                     </div>
 
                     {/* Por destino */}
