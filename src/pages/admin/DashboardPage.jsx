@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -78,6 +78,118 @@ function StatRow({ label, value, total, color }) {
       </div>
       <div className="stat-row__bar">
         <div className="stat-row__fill" style={{ width: `${width}%`, "--bar-color": color }} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * DonutChart — SVG puro sin librerías.
+ * Muestra dos segmentos (QR y Manual) con total en el centro y leyenda lateral.
+ */
+function DonutChart({ qr = 0, manual = 0 }) {
+  const total = qr + manual;
+  const r = 36;
+  const cx = 48;
+  const cy = 48;
+  const circ = 2 * Math.PI * r;
+
+  const qrPct   = total ? qr   / total : 0.5;
+  const manPct  = total ? manual / total : 0.5;
+  const qrDash  = qrPct  * circ;
+  const manDash = manPct * circ;
+
+  // QR empieza desde las 12 (offset = -circ/4)
+  const qrOffset  = -circ / 4;
+  const manOffset = qrOffset + qrDash;
+
+  const segments = [
+    { key: "qr",     dash: qrDash,  offset: qrOffset,  color: "var(--color-primary)", label: "QR",     count: qr },
+    { key: "manual", dash: manDash, offset: manOffset, color: "var(--color-warning)", label: "Manual", count: manual },
+  ];
+
+  const [hovered, setHovered] = useState(null);
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      {/* SVG donut */}
+      <svg width="96" height="96" viewBox="0 0 96 96" style={{ flexShrink: 0 }}>
+        {/* Track */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border)" strokeWidth="14" />
+        {segments.map((s) => (
+          <circle
+            key={s.key}
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={s.color}
+            strokeWidth="14"
+            strokeDasharray={`${animated ? s.dash : 0} ${circ}`}
+            strokeDashoffset={-s.offset}
+            strokeLinecap="butt"
+            style={{
+              opacity: hovered && hovered !== s.key ? 0.25 : 1,
+              transition: "stroke-dasharray 0.6s ease, opacity 0.2s",
+              cursor: "pointer",
+            }}
+            onMouseEnter={() => setHovered(s.key)}
+            onMouseLeave={() => setHovered(null)}
+          />
+        ))}
+        {/* Total en el centro */}
+        <text
+          x={cx} y={cy - 6}
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="600"
+          fill="var(--color-text)"
+        >
+          {total}
+        </text>
+        <text
+          x={cx} y={cy + 9}
+          textAnchor="middle"
+          fontSize="9"
+          fill="var(--color-text-muted)"
+        >
+          total
+        </text>
+      </svg>
+
+      {/* Leyenda */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {segments.map((s) => {
+          const pctVal = total ? Math.round((s.count / total) * 100) : 0;
+          const active = hovered === s.key;
+          return (
+            <div
+              key={s.key}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                opacity: hovered && !active ? 0.35 : 1,
+                transition: "opacity 0.2s",
+                cursor: "default",
+              }}
+              onMouseEnter={() => setHovered(s.key)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div style={{ width: "10px", height: "10px", borderRadius: "2px", background: s.color, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "12px", fontWeight: active ? 600 : 400, color: "var(--color-text)", lineHeight: 1.2 }}>
+                  {s.label} — {s.count}
+                </div>
+                <div style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>
+                  {pctVal}%
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
