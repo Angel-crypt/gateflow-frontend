@@ -513,6 +513,11 @@ export default function DashboardPage() {
                     <div>
                       <div className="analytics__sub-label">Por tipo</div>
                       <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
+                      {logs?.by_type?.manual > 0 && logs?.total > 0 && (
+                        <div style={{ marginTop: "10px", fontSize: "11px", color: "var(--color-text-muted)" }}>
+                          1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual
+                        </div>
+                      )}
                     </div>
 
                     {/* Por destino */}
