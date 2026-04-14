@@ -468,41 +468,6 @@
   white-space: nowrap;
 }
 
-/* ─── Type split ─────────────────────────────────────────── */
-.type-split {
-  display: flex;
-  border-radius: var(--radius);
-  overflow: hidden;
-  height: 10px;
-  background: var(--color-border);
-}
-.type-split__qr {
-  background: var(--color-primary);
-  transition: width 0.6s ease;
-}
-
-/*
- * Leyenda simplificada: solo dot + texto.
- * Se eliminó el ícono redundante (QrCode/PenLine) que duplicaba
- * la información del dot de color.
- */
-.type-legend {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-}
-.type-legend__item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-}
-.type-legend__dot {
-  width: 10px; height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
 
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
