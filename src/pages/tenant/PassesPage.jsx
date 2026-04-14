@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getPasses, deletePass, updatePass, exportPassesCSV } from "../../api/passes.api";
+import { getPasses, deletePass, updatePass, exportPassesCSV, exportPassesPDF } from "../../api/passes.api";
 import { Download } from "lucide-react";
 import { Spinner } from "../../components/Spinner";
 import CreatePassModal from "./CreatePassModal";
@@ -132,6 +132,16 @@ export default function PassesPage() {
     URL.revokeObjectURL(link.href);
   };
 
+  const exportToPDF = async () => {
+    const res = await exportPassesPDF();
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `mis_pases_${new Date().toISOString().split("T")[0]}.pdf`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   if (isLoading) return <Spinner />;
 
   return (
@@ -157,6 +167,17 @@ export default function PassesPage() {
         >
           <Download size={14} />
           CSV
+        </button>
+        <button
+          onClick={exportToPDF}
+          style={{
+            padding: "12px 14px", background: "var(--color-surface)",
+            border: "0.5px solid var(--color-border)", borderRadius: "8px",
+            fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
+          }}
+        >
+          <Download size={14} />
+          PDF
         </button>
       </div>
 
