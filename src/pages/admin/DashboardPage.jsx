@@ -577,7 +577,7 @@ export default function DashboardPage() {
                     <tr key={row.id} style={{ borderBottom: "0.5px solid var(--color-border)" }}>
                       <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.id}</td>
                       <td style={{ padding: "8px 10px", fontWeight: 500 }}>{row.visitor_name}</td>
-                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate || "—"}</td>
+                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate}</td>
                       <td style={{ padding: "8px 10px" }}>{row.destination || "—"}</td>
                       <td style={{ padding: "8px 10px" }}>
                         <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.access_type === "qr" ? "#e0f2fe" : "#fef3c7", color: row.access_type === "qr" ? "#0369a1" : "#b45309" }}>
@@ -585,8 +585,8 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.pass_id || "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>{row.pass_type || "—"}</td>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>{row.pass_type}</td>
+                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard}</td>
                       <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
                       <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
                       <td style={{ padding: "8px 10px" }}>
