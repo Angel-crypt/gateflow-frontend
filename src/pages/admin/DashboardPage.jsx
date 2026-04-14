@@ -246,18 +246,24 @@ function BarChart({ data }) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
     <div className="bar-chart">
-      {data.map((d) => (
-        <div key={d.date} className="bar-chart__col">
-          {/* Valor sobre la barra — accesible también en mobile */}
-          <span className="bar-chart__count">{d.count > 0 ? d.count : ""}</span>
-          <div
-            className="bar-chart__bar"
-            style={{ height: `${Math.max((d.count / max) * 110, d.count > 0 ? 8 : 3)}px` }}
-            title={`${fmtDate(d.date)}: ${d.count}`}
-          />
-          <span className="bar-chart__label">{fmtDate(d.date)}</span>
-        </div>
-      ))}
+      {data.map((d) => {
+        const ratio = d.count / max;
+        const intensity = d.count > 0 ? 0.35 + ratio * 0.65 : 0.15;
+        return (
+          <div key={d.date} className="bar-chart__col">
+            <span className="bar-chart__count">{d.count > 0 ? d.count : ""}</span>
+            <div
+              className="bar-chart__bar"
+              style={{
+                height: `${Math.max(ratio * 90, d.count > 0 ? 8 : 3)}px`,
+                "--bar-opacity": intensity,
+              }}
+              title={`${fmtDate(d.date)}: ${d.count}`}
+            />
+            <span className="bar-chart__label">{fmtDate(d.date)}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
