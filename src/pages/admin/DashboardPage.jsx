@@ -109,17 +109,38 @@ function DonutChart({ qr = 0, manual = 0 }) {
   ];
 
   const [hovered, setHovered] = useState(null);
+  const [tooltip, setTooltip] = useState(null); // { x, y, label, count }
   const [animated, setAnimated] = useState(false);
+  const svgRef = useRef(null);
 
   useEffect(() => {
     const t = requestAnimationFrame(() => setAnimated(true));
     return () => cancelAnimationFrame(t);
   }, []);
 
+  const handleSegmentEnter = (e, s) => {
+    setHovered(s.key);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (rect) {
+      setTooltip({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top - 12,
+        label: s.label,
+        count: s.count,
+      });
+    }
+  };
+
+  const handleSegmentLeave = () => {
+    setHovered(null);
+    setTooltip(null);
+  };
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
       {/* SVG donut */}
-      <svg width="96" height="96" viewBox="0 0 96 96" style={{ flexShrink: 0 }}>
+      <div style={{ position: "relative", flexShrink: 0 }}>
+      <svg ref={svgRef} width="96" height="96" viewBox="0 0 96 96">
         {/* Track */}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border)" strokeWidth="14" />
         {segments.map((s) => (
@@ -137,8 +158,8 @@ function DonutChart({ qr = 0, manual = 0 }) {
               transition: "stroke-dasharray 0.6s ease, opacity 0.2s",
               cursor: "pointer",
             }}
-            onMouseEnter={() => setHovered(s.key)}
-            onMouseLeave={() => setHovered(null)}
+            onMouseEnter={(e) => handleSegmentEnter(e, s)}
+            onMouseLeave={handleSegmentLeave}
           />
         ))}
         {/* Total en el centro */}
@@ -160,6 +181,26 @@ function DonutChart({ qr = 0, manual = 0 }) {
           total
         </text>
       </svg>
+      {tooltip && (
+        <div style={{
+          position: "absolute",
+          top: tooltip.y,
+          left: tooltip.x,
+          transform: "translate(-50%, -100%)",
+          background: "var(--color-surface)",
+          border: "0.5px solid var(--color-border)",
+          borderRadius: "6px",
+          padding: "4px 8px",
+          fontSize: "11px",
+          color: "var(--color-text)",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+        }}>
+          {tooltip.label} — {tooltip.count}
+        </div>
+      )}
+      </div>
 
       {/* Leyenda */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
