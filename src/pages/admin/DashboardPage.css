@@ -122,8 +122,8 @@
 }
 .dash__grid-2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-5);
 }
 
 /* ─── KPI card ───────────────────────────────────────────── */
@@ -359,7 +359,10 @@
  * Padding aumentado de space-5 (20px) a space-6 (24px) para
  * dar más respiración al contenido analítico.
  */
-.analytics__body { padding: var(--space-6); }
+.analytics__body {
+  padding: var(--space-6);
+  min-height: 200px;
+}
 
 /* Spinner centrado para estados de carga */
 .analytics__loading {
@@ -385,6 +388,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  border-left: 1px solid var(--color-border);
+  padding-left: var(--space-5);
 }
 
 /* Lista de StatRows dentro de analytics */
@@ -445,10 +450,14 @@
   width: 100%;
   border-radius: 3px 3px 0 0;
   background: var(--color-primary);
-  transition: height 0.5s ease;
+  opacity: var(--bar-opacity, 1);
+  transition: height 0.5s ease, opacity 0.25s ease;
   min-height: 3px;
 }
-.bar-chart__bar:hover { background: var(--color-primary-hover); }
+.bar-chart__bar:hover {
+  --bar-opacity: 1;
+  background: var(--color-primary-hover);
+}
 
 /* Valor sobre la barra — accesible en mobile sin hover */
 .bar-chart__count {
@@ -483,7 +492,11 @@
   /* Menos gap vertical en pantallas pequeñas */
   .dash { gap: var(--space-8); }
 
-  .analytics__right-col { gap: var(--space-5); }
+  .analytics__right-col {
+    gap: var(--space-5);
+    border-left: none;
+    padding-left: 0;
+  }
 }
 
 @media (max-width: 640px) {
