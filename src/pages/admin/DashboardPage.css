@@ -399,6 +399,110 @@
   gap: var(--space-3);
 }
 
+.access-analytics {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.access-analytics__main,
+.access-analytics__panel,
+.access-summary {
+  background: linear-gradient(180deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-surface) 92%, var(--color-primary-light) 8%) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.access-analytics__main {
+  min-height: 100%;
+}
+
+.access-analytics__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.access-analytics__top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.95fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+.access-analytics__caption {
+  margin-top: var(--space-3);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.access-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.access-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.access-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 84%, var(--color-primary-light) 16%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, var(--color-primary-light) 28%);
+}
+
+.access-summary__metric {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.access-summary__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.access-summary__hint,
+.access-summary__destination-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.access-summary__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.access-summary__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-light);
+}
+
+.access-summary__destination {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
 /* Period pills */
 .period-pills {
   display: flex;
@@ -497,6 +601,14 @@
     border-left: none;
     padding-left: 0;
   }
+
+  .access-analytics {
+    grid-template-columns: 1fr;
+  }
+
+  .access-analytics__top-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -513,4 +625,14 @@
 
   /* Analytics body con menos padding en mobile */
   .analytics__body { padding: var(--space-4); }
+
+  .access-analytics__main,
+  .access-analytics__panel,
+  .access-summary {
+    padding: var(--space-4);
+  }
+
+  .access-summary__grid {
+    grid-template-columns: 1fr;
+  }
 }

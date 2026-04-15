@@ -83,6 +83,44 @@ function StatRow({ label, value, total, color }) {
   );
 }
 
+function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
+  const manualShare = pct(manual, total);
+  const qrShare = pct(qr, total);
+
+  const items = [
+    { label: "Total", value: total ?? 0, hint: "accesos en el periodo" },
+    { label: "QR", value: qr ?? 0, hint: `${qrShare}% del total` },
+    { label: "Manual", value: manual ?? 0, hint: `${manualShare}% del total` },
+    { label: "Pico", value: peakDay?.count ?? 0, hint: peakDay ? fmtDate(peakDay.date) : "sin registros" },
+  ];
+
+  return (
+    <div className="access-summary">
+      <div className="analytics__sub-label">Resumen del periodo</div>
+
+      <div className="access-summary__grid">
+        {items.map((item) => (
+          <div key={item.label} className="access-summary__item">
+            <span className="access-summary__metric">{item.value}</span>
+            <span className="access-summary__label">{item.label}</span>
+            <span className="access-summary__hint">{item.hint}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="access-summary__footer">
+        <span className="access-summary__eyebrow">Destino principal</span>
+        <strong className="access-summary__destination">
+          {topDestination?.destination ?? "Sin registros"}
+        </strong>
+        <span className="access-summary__destination-meta">
+          {topDestination ? `${topDestination.count} accesos` : "No hay movimiento en este periodo"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /**
  * DonutChart — SVG puro sin librerías.
  * Muestra dos segmentos (QR y Manual) con total en el centro y leyenda lateral.
@@ -332,6 +370,12 @@ export default function DashboardPage() {
     retry: false,
   });
 
+  const topAccessDestination = logs?.by_destination?.[0] ?? null;
+  const peakAccessDay = logs?.by_day?.reduce(
+    (peak, day) => (!peak || day.count > peak.count ? day : peak),
+    null
+  );
+
   const activeTableFilters = Object.fromEntries(
     Object.entries({ ...tableFilters, page: tablePage, ordering: tableOrdering }).filter(([, v]) => v !== "")
   );
@@ -502,33 +546,38 @@ export default function DashboardPage() {
               loadingLogs ? (
                 <div className="analytics__loading"><Spinner size="md" /></div>
               ) : (
-                <div className="dash__grid-2">
+                <div className="access-analytics">
 
-                  {/* Evolución diaria */}
-                  <div>
+                  <div className="access-analytics__main">
                     <div className="analytics__sub-label">
                       Evolución — {logs?.total ?? 0} total
                     </div>
                     <BarChart data={logs?.by_day} />
                   </div>
 
-                  {/* Por tipo + por destino */}
-                  <div className="analytics__right-col">
+                  <div className="access-analytics__aside">
+                    <div className="access-analytics__top-row">
+                      <div className="access-analytics__panel">
+                        <div className="analytics__sub-label">Por tipo</div>
+                        <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
+                        {logs?.by_type?.manual > 0 && logs?.total > 0 && (
+                          <div className="access-analytics__caption">
+                            1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Por tipo */}
-                    <div>
-                      <div className="analytics__sub-label">Por tipo</div>
-                      <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
-                      {logs?.by_type?.manual > 0 && logs?.total > 0 && (
-                        <div style={{ marginTop: "10px", fontSize: "11px", color: "var(--color-text-muted)" }}>
-                          1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual
-                        </div>
-                      )}
+                      <AccessSummaryCard
+                        total={logs?.total ?? 0}
+                        qr={logs?.by_type?.qr ?? 0}
+                        manual={logs?.by_type?.manual ?? 0}
+                        peakDay={peakAccessDay}
+                        topDestination={topAccessDestination}
+                      />
                     </div>
 
-                    {/* Por destino */}
                     {logs?.by_destination?.length > 0 && (
-                      <div>
+                      <div className="access-analytics__panel">
                         <div className="analytics__sub-label">Por destino</div>
                         <div className="analytics__rows">
                           {logs.by_destination.slice(0, 4).map((d) => (
