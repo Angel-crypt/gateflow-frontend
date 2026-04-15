@@ -86,6 +86,7 @@ function StatRow({ label, value, total, color }) {
 function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
   const manualShare = pct(manual, total);
   const qrShare = pct(qr, total);
+  const leadShare = topDestination ? pct(topDestination.count, total) : 0;
 
   const items = [
     { label: "Total", value: total ?? 0, hint: "accesos en el periodo" },
@@ -96,7 +97,14 @@ function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
 
   return (
     <div className="access-summary">
-      <div className="analytics__sub-label">Resumen del periodo</div>
+      <div className="access-summary__header">
+        <div className="analytics__sub-label">Resumen del periodo</div>
+        <div className="access-summary__headline">
+          {topDestination
+            ? `${topDestination.destination} lidera el movimiento`
+            : "Sin actividad en el periodo"}
+        </div>
+      </div>
 
       <div className="access-summary__grid">
         {items.map((item) => (
@@ -110,11 +118,18 @@ function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
 
       <div className="access-summary__footer">
         <span className="access-summary__eyebrow">Destino principal</span>
-        <strong className="access-summary__destination">
-          {topDestination?.destination ?? "Sin registros"}
-        </strong>
+        <div className="access-summary__destination-row">
+          <strong className="access-summary__destination">
+            {topDestination?.destination ?? "Sin registros"}
+          </strong>
+          {topDestination && (
+            <span className="access-summary__destination-badge">
+              {leadShare}% del total
+            </span>
+          )}
+        </div>
         <span className="access-summary__destination-meta">
-          {topDestination ? `${topDestination.count} accesos` : "No hay movimiento en este periodo"}
+          {topDestination ? `${topDestination.count} accesos en el rango seleccionado` : "No hay movimiento en este periodo"}
         </span>
       </div>
     </div>
