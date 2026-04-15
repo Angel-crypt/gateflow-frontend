@@ -121,6 +121,45 @@ function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
   );
 }
 
+function AccessDestinationList({ items = [], total = 0 }) {
+  return (
+    <div className="destination-ranking">
+      {items.slice(0, 4).map((item, index) => {
+        const share = pct(item.count, total);
+        const isLeader = index === 0;
+
+        return (
+          <div
+            key={item.destination}
+            className={`destination-ranking__item${isLeader ? " destination-ranking__item--leader" : ""}`}
+          >
+            <div className="destination-ranking__top">
+              <div className="destination-ranking__title-group">
+                <span className="destination-ranking__place">
+                  {isLeader ? "Top" : `#${index + 1}`}
+                </span>
+                <strong className="destination-ranking__title">{item.destination}</strong>
+              </div>
+
+              <div className="destination-ranking__meta">
+                <strong className="destination-ranking__count">{item.count}</strong>
+                <span className="destination-ranking__share">{share}%</span>
+              </div>
+            </div>
+
+            <div className="destination-ranking__bar">
+              <div
+                className="destination-ranking__fill"
+                style={{ width: `${share}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /**
  * DonutChart — SVG puro sin librerías.
  * Muestra dos segmentos (QR y Manual) con total en el centro y leyenda lateral.
@@ -608,17 +647,7 @@ export default function DashboardPage() {
                     {logs?.by_destination?.length > 0 && (
                       <div className="access-analytics__panel">
                         <div className="analytics__sub-label">Por destino</div>
-                        <div className="analytics__rows">
-                          {logs.by_destination.slice(0, 4).map((d) => (
-                            <StatRow
-                              key={d.destination}
-                              label={d.destination}
-                              value={d.count}
-                              total={logs.total}
-                              color="var(--color-primary)"
-                            />
-                          ))}
-                        </div>
+                        <AccessDestinationList items={logs.by_destination} total={logs.total} />
                       </div>
                     )}
                   </div>

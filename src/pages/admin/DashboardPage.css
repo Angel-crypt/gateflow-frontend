@@ -503,6 +503,89 @@
   color: var(--color-text);
 }
 
+.destination-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.destination-ranking__item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light) 10%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, var(--color-primary-light) 18%);
+}
+
+.destination-ranking__item--leader {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary-light) 46%, var(--color-surface) 54%) 0%, var(--color-surface) 100%);
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border) 76%);
+}
+
+.destination-ranking__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.destination-ranking__title-group,
+.destination-ranking__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.destination-ranking__meta {
+  flex-shrink: 0;
+}
+
+.destination-ranking__place {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+}
+
+.destination-ranking__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.destination-ranking__count {
+  font-family: 'Fira Code', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.destination-ranking__share {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.destination-ranking__bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-border) 70%, white 30%);
+  overflow: hidden;
+}
+
+.destination-ranking__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 78%, white 22%) 0%, var(--color-primary) 100%);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
 /* Period pills */
 .period-pills {
   display: flex;
@@ -721,6 +804,11 @@
 
   .trend-chart__summary {
     grid-template-columns: 1fr;
+  }
+
+  .destination-ranking__top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
