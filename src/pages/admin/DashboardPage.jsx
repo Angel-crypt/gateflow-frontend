@@ -83,6 +83,98 @@ function StatRow({ label, value, total, color }) {
   );
 }
 
+function AccessSummaryCard({ total, qr, manual, peakDay, topDestination }) {
+  const manualShare = pct(manual, total);
+  const qrShare = pct(qr, total);
+  const leadShare = topDestination ? pct(topDestination.count, total) : 0;
+
+  const items = [
+    { label: "Total", value: total ?? 0, hint: "accesos en el periodo" },
+    { label: "QR", value: qr ?? 0, hint: `${qrShare}% del total` },
+    { label: "Manual", value: manual ?? 0, hint: `${manualShare}% del total` },
+    { label: "Pico", value: peakDay?.count ?? 0, hint: peakDay ? fmtDate(peakDay.date) : "sin registros" },
+  ];
+
+  return (
+    <div className="access-summary">
+      <div className="access-summary__header">
+        <div className="analytics__sub-label">Resumen del periodo</div>
+        <div className="access-summary__headline">
+          {topDestination
+            ? `${topDestination.destination} lidera el movimiento`
+            : "Sin actividad en el periodo"}
+        </div>
+      </div>
+
+      <div className="access-summary__grid">
+        {items.map((item) => (
+          <div key={item.label} className="access-summary__item">
+            <span className="access-summary__metric">{item.value}</span>
+            <span className="access-summary__label">{item.label}</span>
+            <span className="access-summary__hint">{item.hint}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="access-summary__footer">
+        <span className="access-summary__eyebrow">Destino principal</span>
+        <div className="access-summary__destination-row">
+          <strong className="access-summary__destination">
+            {topDestination?.destination ?? "Sin registros"}
+          </strong>
+          {topDestination && (
+            <span className="access-summary__destination-badge">
+              {leadShare}% del total
+            </span>
+          )}
+        </div>
+        <span className="access-summary__destination-meta">
+          {topDestination ? `${topDestination.count} accesos en el rango seleccionado` : "No hay movimiento en este periodo"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AccessDestinationList({ items = [], total = 0 }) {
+  return (
+    <div className="destination-ranking">
+      {items.slice(0, 4).map((item, index) => {
+        const share = pct(item.count, total);
+        const isLeader = index === 0;
+
+        return (
+          <div
+            key={item.destination}
+            className={`destination-ranking__item${isLeader ? " destination-ranking__item--leader" : ""}`}
+          >
+            <div className="destination-ranking__top">
+              <div className="destination-ranking__title-group">
+                <span className="destination-ranking__place">
+                  {isLeader ? "Top" : `#${index + 1}`}
+                </span>
+                <strong className="destination-ranking__title">{item.destination}</strong>
+              </div>
+
+              <div className="destination-ranking__meta">
+                <strong className="destination-ranking__count">{item.count}</strong>
+                <span className="destination-ranking__share">{share}%</span>
+              </div>
+            </div>
+
+            <div className="destination-ranking__bar">
+              <div
+                className="destination-ranking__fill"
+                style={{ width: `${share}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /**
  * DonutChart — SVG puro sin librerías.
  * Muestra dos segmentos (QR y Manual) con total en el centro y leyenda lateral.
@@ -244,26 +336,170 @@ function DonutChart({ qr = 0, manual = 0 }) {
 function BarChart({ data }) {
   if (!data?.length) return null;
   const max = Math.max(...data.map((d) => d.count), 1);
+  const total = data.reduce((sum, d) => sum + d.count, 0);
+  const avg = Math.round(total / data.length);
+  const peakDay = data.reduce(
+    (peak, day) => (!peak || day.count > peak.count ? day : peak),
+    null
+  );
+
   return (
-    <div className="bar-chart">
-      {data.map((d) => {
-        const ratio = d.count / max;
-        const intensity = d.count > 0 ? 0.35 + ratio * 0.65 : 0.15;
-        return (
-          <div key={d.date} className="bar-chart__col">
-            <span className="bar-chart__count">{d.count > 0 ? d.count : ""}</span>
+    <div className="trend-chart">
+      <div className="trend-chart__summary">
+        <div className="trend-chart__stat">
+          <span className="trend-chart__stat-label">Promedio</span>
+          <strong className="trend-chart__stat-value">{avg}</strong>
+          <span className="trend-chart__stat-note">por bloque</span>
+        </div>
+
+        <div className="trend-chart__stat trend-chart__stat--highlight">
+          <span className="trend-chart__stat-label">Pico</span>
+          <strong className="trend-chart__stat-value">{peakDay?.count ?? 0}</strong>
+          <span className="trend-chart__stat-note">
+            {peakDay ? fmtDate(peakDay.date) : "sin registros"}
+          </span>
+        </div>
+      </div>
+
+      <div className="bar-chart">
+        {data.map((d) => {
+          const ratio = d.count / max;
+          const isPeak = peakDay?.date === d.date;
+          return (
             <div
-              className="bar-chart__bar"
-              style={{
-                height: `${Math.max(ratio * 90, d.count > 0 ? 8 : 3)}px`,
-                "--bar-opacity": intensity,
-              }}
-              title={`${fmtDate(d.date)}: ${d.count}`}
-            />
-            <span className="bar-chart__label">{fmtDate(d.date)}</span>
-          </div>
-        );
-      })}
+              key={d.date}
+              className={`bar-chart__col${isPeak ? " bar-chart__col--peak" : ""}`}
+            >
+              <span className="bar-chart__count">{d.count}</span>
+              <div className="bar-chart__track">
+                <div
+                  className="bar-chart__bar"
+                  style={{
+                    height: `${Math.max(ratio * 124, d.count > 0 ? 10 : 4)}px`,
+                  }}
+                  title={`${fmtDate(d.date)}: ${d.count}`}
+                />
+              </div>
+              <span className="bar-chart__label">{fmtDate(d.date)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RefinedDonutChart({ qr = 0, manual = 0 }) {
+  const total = qr + manual;
+  const r = 36;
+  const cx = 48;
+  const cy = 48;
+  const circ = 2 * Math.PI * r;
+
+  const qrPct = total ? qr / total : 0.5;
+  const manualPct = total ? manual / total : 0.5;
+  const qrDash = qrPct * circ;
+  const manualDash = manualPct * circ;
+
+  const segments = [
+    { key: "qr", dash: qrDash, offset: -circ / 4, color: "var(--color-primary)", label: "QR", count: qr },
+    { key: "manual", dash: manualDash, offset: -circ / 4 + qrDash, color: "var(--color-warning)", label: "Manual", count: manual },
+  ];
+
+  const [hovered, setHovered] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+  const [animated, setAnimated] = useState(false);
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  const handleSegmentEnter = (e, segment) => {
+    setHovered(segment.key);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    setTooltip({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top - 14,
+      label: segment.label,
+      count: segment.count,
+    });
+  };
+
+  const handleSegmentLeave = () => {
+    setHovered(null);
+    setTooltip(null);
+  };
+
+  return (
+    <div className="donut-chart">
+      <div className="donut-chart__visual">
+        <div className="donut-chart__ring-wrap">
+          <svg ref={svgRef} width="112" height="112" viewBox="0 0 96 96" className="donut-chart__svg">
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border)" strokeWidth="14" />
+            {segments.map((segment) => (
+              <circle
+                key={segment.key}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="none"
+                stroke={segment.color}
+                strokeWidth="14"
+                strokeDasharray={`${animated ? segment.dash : 0} ${circ}`}
+                strokeDashoffset={-segment.offset}
+                strokeLinecap="butt"
+                className="donut-chart__segment"
+                style={{ opacity: hovered && hovered !== segment.key ? 0.25 : 1, cursor: "pointer" }}
+                onMouseEnter={(e) => handleSegmentEnter(e, segment)}
+                onMouseLeave={handleSegmentLeave}
+              />
+            ))}
+            <text x={cx} y={cy - 6} textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--color-text)">
+              {total}
+            </text>
+            <text x={cx} y={cy + 9} textAnchor="middle" fontSize="9" fill="var(--color-text-muted)">
+              total
+            </text>
+          </svg>
+
+          {tooltip && (
+            <div className="donut-chart__tooltip" style={{ top: tooltip.y, left: tooltip.x }}>
+              {tooltip.label} · {tooltip.count}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="donut-chart__legend">
+        {segments.map((segment) => {
+          const pctVal = total ? Math.round((segment.count / total) * 100) : 0;
+          const active = hovered === segment.key;
+
+          return (
+            <div
+              key={segment.key}
+              className={`donut-chart__legend-item${active ? " donut-chart__legend-item--active" : ""}`}
+              style={{ opacity: hovered && !active ? 0.35 : 1 }}
+              onMouseEnter={() => setHovered(segment.key)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="donut-chart__legend-main">
+                <span className="donut-chart__swatch" style={{ background: segment.color }} />
+                <div className="donut-chart__legend-copy">
+                  <div className="donut-chart__legend-label">{segment.label}</div>
+                  <div className="donut-chart__legend-percent">{pctVal}% del total</div>
+                </div>
+              </div>
+
+              <div className="donut-chart__legend-value">{segment.count}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -331,6 +567,12 @@ export default function DashboardPage() {
     refetchInterval: 30000,
     retry: false,
   });
+
+  const topAccessDestination = logs?.by_destination?.[0] ?? null;
+  const peakAccessDay = logs?.by_day?.reduce(
+    (peak, day) => (!peak || day.count > peak.count ? day : peak),
+    null
+  );
 
   const activeTableFilters = Object.fromEntries(
     Object.entries({ ...tableFilters, page: tablePage, ordering: tableOrdering }).filter(([, v]) => v !== "")
@@ -502,45 +744,40 @@ export default function DashboardPage() {
               loadingLogs ? (
                 <div className="analytics__loading"><Spinner size="md" /></div>
               ) : (
-                <div className="dash__grid-2">
+                <div className="access-analytics">
 
-                  {/* Evolución diaria */}
-                  <div>
+                  <div className="access-analytics__main">
                     <div className="analytics__sub-label">
                       Evolución — {logs?.total ?? 0} total
                     </div>
                     <BarChart data={logs?.by_day} />
                   </div>
 
-                  {/* Por tipo + por destino */}
-                  <div className="analytics__right-col">
+                  <div className="access-analytics__aside">
+                    <div className="access-analytics__top-row">
+                      <div className="access-analytics__panel">
+                        <div className="analytics__sub-label">Por tipo</div>
+                        <RefinedDonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
+                        {logs?.by_type?.manual > 0 && logs?.total > 0 && (
+                          <div className="access-analytics__caption">
+                            1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Por tipo */}
-                    <div>
-                      <div className="analytics__sub-label">Por tipo</div>
-                      <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
-                      {logs?.by_type?.manual > 0 && logs?.total > 0 && (
-                        <div style={{ marginTop: "10px", fontSize: "11px", color: "var(--color-text-muted)" }}>
-                          1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual
-                        </div>
-                      )}
+                      <AccessSummaryCard
+                        total={logs?.total ?? 0}
+                        qr={logs?.by_type?.qr ?? 0}
+                        manual={logs?.by_type?.manual ?? 0}
+                        peakDay={peakAccessDay}
+                        topDestination={topAccessDestination}
+                      />
                     </div>
 
-                    {/* Por destino */}
                     {logs?.by_destination?.length > 0 && (
-                      <div>
+                      <div className="access-analytics__panel">
                         <div className="analytics__sub-label">Por destino</div>
-                        <div className="analytics__rows">
-                          {logs.by_destination.slice(0, 4).map((d) => (
-                            <StatRow
-                              key={d.destination}
-                              label={d.destination}
-                              value={d.count}
-                              total={logs.total}
-                              color="var(--color-primary)"
-                            />
-                          ))}
-                        </div>
+                        <AccessDestinationList items={logs.by_destination} total={logs.total} />
                       </div>
                     )}
                   </div>
