@@ -374,6 +374,121 @@ function BarChart({ data }) {
   );
 }
 
+function RefinedDonutChart({ qr = 0, manual = 0 }) {
+  const total = qr + manual;
+  const r = 36;
+  const cx = 48;
+  const cy = 48;
+  const circ = 2 * Math.PI * r;
+
+  const qrPct = total ? qr / total : 0.5;
+  const manualPct = total ? manual / total : 0.5;
+  const qrDash = qrPct * circ;
+  const manualDash = manualPct * circ;
+
+  const segments = [
+    { key: "qr", dash: qrDash, offset: -circ / 4, color: "var(--color-primary)", label: "QR", count: qr },
+    { key: "manual", dash: manualDash, offset: -circ / 4 + qrDash, color: "var(--color-warning)", label: "Manual", count: manual },
+  ];
+
+  const [hovered, setHovered] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+  const [animated, setAnimated] = useState(false);
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  const handleSegmentEnter = (e, segment) => {
+    setHovered(segment.key);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    setTooltip({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top - 14,
+      label: segment.label,
+      count: segment.count,
+    });
+  };
+
+  const handleSegmentLeave = () => {
+    setHovered(null);
+    setTooltip(null);
+  };
+
+  return (
+    <div className="donut-chart">
+      <div className="donut-chart__visual">
+        <div className="donut-chart__ring-wrap">
+          <svg ref={svgRef} width="112" height="112" viewBox="0 0 96 96" className="donut-chart__svg">
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-border)" strokeWidth="14" />
+            {segments.map((segment) => (
+              <circle
+                key={segment.key}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="none"
+                stroke={segment.color}
+                strokeWidth="14"
+                strokeDasharray={`${animated ? segment.dash : 0} ${circ}`}
+                strokeDashoffset={-segment.offset}
+                strokeLinecap="butt"
+                className="donut-chart__segment"
+                style={{ opacity: hovered && hovered !== segment.key ? 0.25 : 1, cursor: "pointer" }}
+                onMouseEnter={(e) => handleSegmentEnter(e, segment)}
+                onMouseLeave={handleSegmentLeave}
+              />
+            ))}
+            <text x={cx} y={cy - 6} textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--color-text)">
+              {total}
+            </text>
+            <text x={cx} y={cy + 9} textAnchor="middle" fontSize="9" fill="var(--color-text-muted)">
+              total
+            </text>
+          </svg>
+
+          {tooltip && (
+            <div className="donut-chart__tooltip" style={{ top: tooltip.y, left: tooltip.x }}>
+              {tooltip.label} · {tooltip.count}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="donut-chart__legend">
+        {segments.map((segment) => {
+          const pctVal = total ? Math.round((segment.count / total) * 100) : 0;
+          const active = hovered === segment.key;
+
+          return (
+            <div
+              key={segment.key}
+              className={`donut-chart__legend-item${active ? " donut-chart__legend-item--active" : ""}`}
+              style={{ opacity: hovered && !active ? 0.35 : 1 }}
+              onMouseEnter={() => setHovered(segment.key)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="donut-chart__legend-main">
+                <span className="donut-chart__swatch" style={{ background: segment.color }} />
+                <div className="donut-chart__legend-copy">
+                  <div className="donut-chart__legend-label">{segment.label}</div>
+                  <div className="donut-chart__legend-percent">{pctVal}% del total</div>
+                </div>
+              </div>
+
+              <div className="donut-chart__legend-value">{segment.count}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /**
  * SectionHeader — encabezado de sección con línea visual clara.
  * Reemplaza los SectionTitle con estilos inline dispersos.
@@ -627,7 +742,7 @@ export default function DashboardPage() {
                     <div className="access-analytics__top-row">
                       <div className="access-analytics__panel">
                         <div className="analytics__sub-label">Por tipo</div>
-                        <DonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
+                        <RefinedDonutChart qr={logs?.by_type?.qr ?? 0} manual={logs?.by_type?.manual ?? 0} />
                         {logs?.by_type?.manual > 0 && logs?.total > 0 && (
                           <div className="access-analytics__caption">
                             1 de cada {Math.round(logs.total / logs.by_type.manual)} accesos es manual

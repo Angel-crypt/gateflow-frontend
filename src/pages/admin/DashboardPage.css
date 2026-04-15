@@ -586,6 +586,116 @@
   box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
+.donut-chart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.donut-chart__visual {
+  flex-shrink: 0;
+}
+
+.donut-chart__ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-surface) 92%, white 8%) 0 58%, color-mix(in srgb, var(--color-primary-light) 28%, transparent) 58% 100%);
+}
+
+.donut-chart__svg {
+  overflow: visible;
+}
+
+.donut-chart__segment {
+  transition: stroke-dasharray 0.6s ease, opacity 0.2s ease, filter 0.2s ease;
+}
+
+.donut-chart__segment:hover {
+  filter: saturate(1.08);
+}
+
+.donut-chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 92%, white 8%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white 16%);
+  box-shadow: var(--shadow-md);
+  font-size: 0.75rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.donut-chart__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 160px;
+}
+
+.donut-chart__legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light) 10%);
+  border: 1px solid transparent;
+  transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.donut-chart__legend-item--active {
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border) 76%);
+  transform: translateX(2px);
+}
+
+.donut-chart__legend-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.donut-chart__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.donut-chart__legend-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.donut-chart__legend-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.donut-chart__legend-percent {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.donut-chart__legend-value {
+  font-family: 'Fira Code', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
 /* Period pills */
 .period-pills {
   display: flex;
@@ -809,6 +919,16 @@
   .destination-ranking__top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .donut-chart {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .donut-chart__legend {
+    width: 100%;
+    min-width: 0;
   }
 }
 
