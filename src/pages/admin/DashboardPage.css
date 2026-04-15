@@ -362,6 +362,9 @@
 .analytics__body {
   padding: var(--space-6);
   min-height: 200px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary-light) 26%, transparent) 0%, transparent 36%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, white 4%) 0%, var(--color-surface) 100%);
 }
 
 /* Spinner centrado para estados de carga */
@@ -413,10 +416,14 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 6%, transparent);
 }
 
 .access-analytics__main {
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .access-analytics__aside {
@@ -436,6 +443,8 @@
   margin-top: var(--space-3);
   font-size: 0.75rem;
   color: var(--color-text-muted);
+  padding-top: var(--space-3);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 82%, white 18%);
 }
 
 .access-summary {
@@ -548,11 +557,18 @@
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light) 10%);
   border: 1px solid color-mix(in srgb, var(--color-border) 82%, var(--color-primary-light) 18%);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .destination-ranking__item--leader {
   background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary-light) 46%, var(--color-surface) 54%) 0%, var(--color-surface) 100%);
   border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border) 76%);
+}
+
+.destination-ranking__item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border) 82%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .destination-ranking__top {
@@ -680,6 +696,10 @@
   background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light) 10%);
   border: 1px solid transparent;
   transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.donut-chart__legend-item:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border) 82%);
 }
 
 .donut-chart__legend-item--active {
@@ -858,6 +878,7 @@
   gap: 10px;
   min-height: 220px;
   height: auto;
+  padding-top: var(--space-1);
 }
 
 .trend-chart .bar-chart__col {
@@ -919,6 +940,15 @@
 @media (max-width: 1024px) {
   /* 4 cols → 2x2 en tablets */
   .dash__grid-4 { grid-template-columns: repeat(2, 1fr); }
+
+  .access-analytics {
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.95fr);
+    gap: var(--space-5);
+  }
+
+  .access-analytics__top-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -937,10 +967,16 @@
 
   .access-analytics {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 
   .access-analytics__top-row {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .access-analytics__aside {
+    gap: var(--space-4);
   }
 
   .trend-chart__summary {
@@ -991,5 +1027,26 @@
 
   .access-summary__grid {
     grid-template-columns: 1fr;
+  }
+
+  .analytics__header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-right: 0;
+  }
+
+  .period-pills {
+    width: 100%;
+    padding: 0 var(--space-4) var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .analytics__tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .analytics__tab {
+    padding: var(--space-3) var(--space-4);
   }
 }
