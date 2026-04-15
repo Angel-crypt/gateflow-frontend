@@ -282,26 +282,55 @@ function DonutChart({ qr = 0, manual = 0 }) {
 function BarChart({ data }) {
   if (!data?.length) return null;
   const max = Math.max(...data.map((d) => d.count), 1);
+  const total = data.reduce((sum, d) => sum + d.count, 0);
+  const avg = Math.round(total / data.length);
+  const peakDay = data.reduce(
+    (peak, day) => (!peak || day.count > peak.count ? day : peak),
+    null
+  );
+
   return (
-    <div className="bar-chart">
-      {data.map((d) => {
-        const ratio = d.count / max;
-        const intensity = d.count > 0 ? 0.35 + ratio * 0.65 : 0.15;
-        return (
-          <div key={d.date} className="bar-chart__col">
-            <span className="bar-chart__count">{d.count > 0 ? d.count : ""}</span>
+    <div className="trend-chart">
+      <div className="trend-chart__summary">
+        <div className="trend-chart__stat">
+          <span className="trend-chart__stat-label">Promedio</span>
+          <strong className="trend-chart__stat-value">{avg}</strong>
+          <span className="trend-chart__stat-note">por bloque</span>
+        </div>
+
+        <div className="trend-chart__stat trend-chart__stat--highlight">
+          <span className="trend-chart__stat-label">Pico</span>
+          <strong className="trend-chart__stat-value">{peakDay?.count ?? 0}</strong>
+          <span className="trend-chart__stat-note">
+            {peakDay ? fmtDate(peakDay.date) : "sin registros"}
+          </span>
+        </div>
+      </div>
+
+      <div className="bar-chart">
+        {data.map((d) => {
+          const ratio = d.count / max;
+          const isPeak = peakDay?.date === d.date;
+          return (
             <div
-              className="bar-chart__bar"
-              style={{
-                height: `${Math.max(ratio * 90, d.count > 0 ? 8 : 3)}px`,
-                "--bar-opacity": intensity,
-              }}
-              title={`${fmtDate(d.date)}: ${d.count}`}
-            />
-            <span className="bar-chart__label">{fmtDate(d.date)}</span>
-          </div>
-        );
-      })}
+              key={d.date}
+              className={`bar-chart__col${isPeak ? " bar-chart__col--peak" : ""}`}
+            >
+              <span className="bar-chart__count">{d.count}</span>
+              <div className="bar-chart__track">
+                <div
+                  className="bar-chart__bar"
+                  style={{
+                    height: `${Math.max(ratio * 124, d.count > 0 ? 10 : 4)}px`,
+                  }}
+                  title={`${fmtDate(d.date)}: ${d.count}`}
+                />
+              </div>
+              <span className="bar-chart__label">{fmtDate(d.date)}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

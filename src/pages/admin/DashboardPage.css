@@ -581,6 +581,115 @@
   white-space: nowrap;
 }
 
+/* Variante refinada para la evolución de accesos */
+.trend-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.trend-chart__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.trend-chart__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light) 10%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, var(--color-primary-light) 18%);
+}
+
+.trend-chart__stat--highlight {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary-light) 40%, var(--color-surface) 60%) 0%, var(--color-surface) 100%);
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border) 76%);
+}
+
+.trend-chart__stat-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-light);
+}
+
+.trend-chart__stat-value {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.trend-chart__stat-note {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.trend-chart .bar-chart {
+  gap: 10px;
+  min-height: 220px;
+  height: auto;
+}
+
+.trend-chart .bar-chart__col {
+  gap: 8px;
+  height: auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.trend-chart .bar-chart__col--peak .bar-chart__count {
+  color: var(--color-primary);
+}
+
+.trend-chart .bar-chart__col--peak .bar-chart__label {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.trend-chart .bar-chart__track {
+  width: 100%;
+  height: 150px;
+  padding: 10px;
+  border-radius: calc(var(--radius-lg) - 2px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-bg) 82%, white 18%) 0%, color-mix(in srgb, var(--color-border) 38%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white 16%);
+  display: flex;
+  align-items: flex-end;
+}
+
+.trend-chart .bar-chart__bar {
+  border-radius: 999px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 72%, white 28%) 0%, var(--color-primary) 100%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  transition: height 0.5s ease, transform 0.25s ease, filter 0.25s ease;
+  min-height: 4px;
+  opacity: 1;
+}
+
+.trend-chart .bar-chart__bar:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.05);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 72%, white 28%) 0%, var(--color-primary) 100%);
+}
+
+.trend-chart .bar-chart__count {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  min-height: auto;
+}
+
+.trend-chart .bar-chart__label {
+  text-align: center;
+}
+
 
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
@@ -607,6 +716,10 @@
   }
 
   .access-analytics__top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .trend-chart__summary {
     grid-template-columns: 1fr;
   }
 }
