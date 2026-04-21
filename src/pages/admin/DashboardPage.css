@@ -169,6 +169,25 @@
   font-size: 2.375rem; /* +18% respecto al estándar 2rem */
 }
 
+/* Tier 2 — métricas de apoyo (Pases activos, Accesos hoy) */
+.kpi--secondary .kpi__value {
+  font-size: 1.75rem;
+}
+
+/* Tier 3 — dato contextual (Usuarios del parque) */
+.kpi--muted::before {
+  height: 2px;
+  opacity: 0.45;
+}
+.kpi--muted .kpi__value {
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
+}
+.kpi--muted .kpi__icon {
+  width: 30px;
+  height: 30px;
+}
+
 .kpi__top {
   display: flex;
   align-items: flex-start;
