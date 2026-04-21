@@ -916,9 +916,9 @@ export default function DashboardPage() {
 
       {/* ── Tabla combinada de accesos ── */}
       <section className="dash__section">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <div className="atbl__header">
           <SectionHeader icon={Table2}>Registro de accesos</SectionHeader>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="atbl__actions">
             <button
               onClick={async () => {
                 const res = await exportAccessTableCSV(activeTableFilters);
@@ -929,7 +929,7 @@ export default function DashboardPage() {
                 link.click();
                 URL.revokeObjectURL(link.href);
               }}
-              style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+              className="atbl__export-btn"
             >
               <Download size={13} />
               CSV
@@ -945,7 +945,7 @@ export default function DashboardPage() {
                   link.click();
                   URL.revokeObjectURL(link.href);
                 }}
-                style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                className="atbl__export-btn"
               >
                 <Download size={13} />
                 PDF
@@ -955,11 +955,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Filtros */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+        <div className="atbl__filters">
           <select
             value={tableFilters.access_type}
             onChange={(e) => { setTableFilters((f) => ({ ...f, access_type: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           >
             <option value="">Todos los tipos</option>
             <option value="qr">QR</option>
@@ -969,7 +969,7 @@ export default function DashboardPage() {
           <select
             value={tableFilters.status}
             onChange={(e) => { setTableFilters((f) => ({ ...f, status: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           >
             <option value="">Todos los estados</option>
             <option value="open">Activo</option>
@@ -981,40 +981,40 @@ export default function DashboardPage() {
             placeholder="Destino"
             value={tableFilters.destination}
             onChange={(e) => { setTableFilters((f) => ({ ...f, destination: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", width: "140px" }}
+            className="atbl__filter-control atbl__filter-control--dest"
           />
 
           <input
             type="date"
             value={tableFilters.date_from}
             onChange={(e) => { setTableFilters((f) => ({ ...f, date_from: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           />
 
           <input
             type="date"
             value={tableFilters.date_to}
             onChange={(e) => { setTableFilters((f) => ({ ...f, date_to: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           />
 
           {Object.values(tableFilters).some((v) => v !== "") && (
             <button
               onClick={() => { setTableFilters({ access_type: "", status: "", destination: "", date_from: "", date_to: "" }); setTablePage(1); }}
-              style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text-muted)", cursor: "pointer" }}
+              className="atbl__clear-btn"
             >
               Limpiar
             </button>
           )}
         </div>
 
-        <div style={{ overflowX: "auto" }}>
+        <div className="atbl__scroll">
           {loadingTable ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}><Spinner /></div>
+            <div className="atbl__loading"><Spinner /></div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <table className="atbl__table">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                <tr className="atbl__thead-row">
                   {[
                     { label: "ID",        key: "id" },
                     { label: "Visitante", key: "visitor_name" },
@@ -1037,7 +1037,7 @@ export default function DashboardPage() {
                           setTableOrdering(isActive && !isDesc ? `-${key}` : key);
                           setTablePage(1);
                         }}
-                        style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: isActive ? "var(--color-text)" : "var(--color-text-muted)", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" }}
+                        className={`atbl__th${isActive ? " atbl__th--active" : ""}`}
                       >
                         {label}{isActive ? (isDesc ? " ↓" : " ↑") : ""}
                       </th>
@@ -1048,23 +1048,23 @@ export default function DashboardPage() {
               <tbody>
                 {accessTable?.results?.length ? (
                   accessTable.results.map((row) => (
-                    <tr key={row.id} style={{ borderBottom: "0.5px solid var(--color-border)" }}>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.id}</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 500 }}>{row.visitor_name}</td>
-                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate}</td>
-                      <td style={{ padding: "8px 10px" }}>{row.destination || "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>
-                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.access_type === "qr" ? "#e0f2fe" : "#fef3c7", color: row.access_type === "qr" ? "#0369a1" : "#b45309" }}>
+                    <tr key={row.id} className="atbl__tr">
+                      <td className="atbl__td atbl__td--muted">{row.id}</td>
+                      <td className="atbl__td atbl__td--name">{row.visitor_name}</td>
+                      <td className="atbl__td atbl__td--mono">{row.plate}</td>
+                      <td className="atbl__td">{row.destination || "—"}</td>
+                      <td className="atbl__td">
+                        <span className={`atbl__badge atbl__badge--${row.access_type}`}>
                           {row.access_type === "qr" ? "QR" : "Manual"}
                         </span>
                       </td>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.pass_id || "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>{row.pass_type}</td>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard}</td>
-                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
-                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>
-                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.status === "open" ? "#dcfce7" : "#f1f5f9", color: row.status === "open" ? "#16a34a" : "#64748b" }}>
+                      <td className="atbl__td atbl__td--muted">{row.pass_id || "—"}</td>
+                      <td className="atbl__td">{row.pass_type}</td>
+                      <td className="atbl__td atbl__td--muted">{row.guard}</td>
+                      <td className="atbl__td atbl__td--nowrap">{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td className="atbl__td atbl__td--nowrap">{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td className="atbl__td">
+                        <span className={`atbl__badge atbl__badge--${row.status}`}>
                           {row.status === "open" ? "Activo" : "Cerrado"}
                         </span>
                       </td>
@@ -1072,7 +1072,7 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={11} style={{ padding: "32px", textAlign: "center", color: "var(--color-text-muted)" }}>
+                    <td colSpan={11} className="atbl__empty">
                       No hay registros.
                     </td>
                   </tr>
@@ -1084,11 +1084,11 @@ export default function DashboardPage() {
 
         {/* Paginación */}
         {(accessTable?.next || accessTable?.previous) && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--color-text-muted)" }}>
+          <div className="atbl__pagination">
             <button
               onClick={() => setTablePage((p) => p - 1)}
               disabled={!accessTable?.previous}
-              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.previous ? "pointer" : "default", opacity: accessTable?.previous ? 1 : 0.4 }}
+              className="atbl__page-btn"
             >
               ← Anterior
             </button>
@@ -1096,7 +1096,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setTablePage((p) => p + 1)}
               disabled={!accessTable?.next}
-              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.next ? "pointer" : "default", opacity: accessTable?.next ? 1 : 0.4 }}
+              className="atbl__page-btn"
             >
               Siguiente →
             </button>
