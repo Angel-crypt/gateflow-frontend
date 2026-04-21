@@ -34,15 +34,17 @@ function fmtTime(date) {
  * El live-dot se mueve al badge — no al valor numérico —
  * para no confundir el número con texto truncado.
  */
-function KpiCard({ label, value, icon: Icon, accent, accentLight, badge, live, loading, onClick, hero }) {
+function KpiCard({ label, value, icon: Icon, accent, accentLight, badge, live, loading, onClick, hero, secondary, muted }) {
   return (
     <div
       className={[
         "kpi",
-        hero    ? "kpi--hero"      : "",
-        live    ? "kpi--live"      : "",
-        loading ? "kpi--loading"   : "",
-        onClick ? "kpi--clickable" : "",
+        hero      ? "kpi--hero"      : "",
+        secondary ? "kpi--secondary" : "",
+        muted     ? "kpi--muted"     : "",
+        live      ? "kpi--live"      : "",
+        loading   ? "kpi--loading"   : "",
+        onClick   ? "kpi--clickable" : "",
       ].filter(Boolean).join(" ")}
       style={{ "--kpi-accent": accent, "--kpi-accent-light": accentLight }}
       onClick={onClick}
@@ -729,6 +731,7 @@ export default function DashboardPage() {
             icon={Ticket}
             accent="var(--color-primary)"
             accentLight="var(--color-primary-light)"
+            secondary
             loading={loading}
             onClick={() => navigate("/admin/pases")}
           />
@@ -738,6 +741,7 @@ export default function DashboardPage() {
             icon={Activity}
             accent="var(--color-info)"
             accentLight="var(--color-info-light)"
+            secondary
             loading={loading}
             onClick={() => navigate("/admin/accesos")}
           />
@@ -747,6 +751,7 @@ export default function DashboardPage() {
             icon={Users}
             accent="var(--color-warning)"
             accentLight="var(--color-warning-light)"
+            muted
             loading={loading}
             onClick={() => navigate("/admin/usuarios")}
           />
