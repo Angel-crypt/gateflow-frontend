@@ -34,15 +34,17 @@ function fmtTime(date) {
  * El live-dot se mueve al badge — no al valor numérico —
  * para no confundir el número con texto truncado.
  */
-function KpiCard({ label, value, icon: Icon, accent, accentLight, badge, live, loading, onClick, hero }) {
+function KpiCard({ label, value, icon: Icon, accent, accentLight, badge, live, loading, onClick, hero, secondary, muted }) {
   return (
     <div
       className={[
         "kpi",
-        hero    ? "kpi--hero"      : "",
-        live    ? "kpi--live"      : "",
-        loading ? "kpi--loading"   : "",
-        onClick ? "kpi--clickable" : "",
+        hero      ? "kpi--hero"      : "",
+        secondary ? "kpi--secondary" : "",
+        muted     ? "kpi--muted"     : "",
+        live      ? "kpi--live"      : "",
+        loading   ? "kpi--loading"   : "",
+        onClick   ? "kpi--clickable" : "",
       ].filter(Boolean).join(" ")}
       style={{ "--kpi-accent": accent, "--kpi-accent-light": accentLight }}
       onClick={onClick}
@@ -328,11 +330,6 @@ function DonutChart({ qr = 0, manual = 0 }) {
   );
 }
 
-/**
- * BarChart — altura aumentada a 140px con etiquetas de valor
- * sobre cada barra para compensar el tamaño reducido.
- * Font-size de etiquetas subido de 10px → 11px (mínimo legible).
- */
 function BarChart({ data }) {
   if (!data?.length) return null;
   const max = Math.max(...data.map((d) => d.count), 1);
@@ -343,6 +340,45 @@ function BarChart({ data }) {
     null
   );
 
+  const [hovered, setHovered] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+  const [svgWidth, setSvgWidth] = useState(300);
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => setSvgWidth(entries[0].contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const CHART_H = 150;
+  const PAD_TOP = 22;
+  const SVG_H = CHART_H + PAD_TOP;
+  const colW = svgWidth / data.length;
+  const barW = Math.floor(colW * 0.44);
+
+  const bars = data.map((d, i) => {
+    const ratio = d.count / max;
+    const bh = Math.max(ratio * (CHART_H - 10), d.count > 0 ? 14 : 4);
+    const bx = i * colW + (colW - barW) / 2;
+    const by = PAD_TOP + CHART_H - bh;
+    const cx = i * colW + colW / 2;
+    return { ...d, bh, bx, by, cx, isPeak: peakDay?.date === d.date };
+  });
+
+  const linePoints = bars.map((b) => `${b.cx},${b.by}`).join(" ");
+
+  const handleEnter = (e, b) => {
+    setHovered(b.date);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top - 8, label: fmtDate(b.date), count: b.count });
+  };
+
+  const handleLeave = () => { setHovered(null); setTooltip(null); };
+
   return (
     <div className="trend-chart">
       <div className="trend-chart__summary">
@@ -351,7 +387,6 @@ function BarChart({ data }) {
           <strong className="trend-chart__stat-value">{avg}</strong>
           <span className="trend-chart__stat-note">por bloque</span>
         </div>
-
         <div className="trend-chart__stat trend-chart__stat--highlight">
           <span className="trend-chart__stat-label">Pico</span>
           <strong className="trend-chart__stat-value">{peakDay?.count ?? 0}</strong>
@@ -361,29 +396,84 @@ function BarChart({ data }) {
         </div>
       </div>
 
-      <div className="bar-chart">
-        {data.map((d) => {
-          const ratio = d.count / max;
-          const isPeak = peakDay?.date === d.date;
-          return (
-            <div
-              key={d.date}
-              className={`bar-chart__col${isPeak ? " bar-chart__col--peak" : ""}`}
-            >
-              <span className="bar-chart__count">{d.count}</span>
-              <div className="bar-chart__track">
-                <div
-                  className="bar-chart__bar"
+      <div className="bar-chart-wrap">
+        <svg ref={svgRef} width="100%" height={SVG_H} className="bar-chart__svg">
+          <polyline
+            points={linePoints}
+            fill="none"
+            stroke="var(--color-primary)"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            style={{ opacity: hovered ? 0.25 : 0.45, transition: "opacity 0.2s", pointerEvents: "none" }}
+          />
+          {bars.map((b) => (
+            <circle
+              key={`dot-${b.date}`}
+              cx={b.cx} cy={b.by} r="3"
+              fill="var(--color-primary)"
+              style={{
+                opacity: hovered && hovered !== b.date ? 0.15 : hovered === b.date ? 1 : 0.55,
+                transition: "opacity 0.2s",
+                pointerEvents: "none",
+              }}
+            />
+          ))}
+          {bars.map((b) => {
+            const isHovered = hovered === b.date;
+            const isDimmed = hovered && !isHovered;
+            return (
+              <g key={b.date}>
+                <text
+                  x={b.cx} y={b.by - 6}
+                  textAnchor="middle" fontSize="9"
+                  fontFamily="'Fira Code', monospace" fontWeight="700"
+                  fill={isHovered ? "var(--color-primary)" : "var(--color-text-muted)"}
+                  style={{ opacity: isDimmed ? 0.25 : 1, transition: "opacity 0.2s, fill 0.2s", pointerEvents: "none" }}
+                >
+                  {b.count}
+                </text>
+                <rect
+                  x={b.bx} y={b.by} width={barW} height={b.bh} rx="4" ry="4"
+                  fill="var(--color-primary)"
                   style={{
-                    height: `${Math.max(ratio * 124, d.count > 0 ? 10 : 4)}px`,
+                    opacity: isDimmed ? 0.2 : 1,
+                    filter: isHovered ? "brightness(1.12)" : undefined,
+                    cursor: "pointer",
+                    transition: "opacity 0.2s",
                   }}
-                  title={`${fmtDate(d.date)}: ${d.count}`}
+                  onMouseEnter={(e) => handleEnter(e, b)}
+                  onMouseLeave={handleLeave}
                 />
-              </div>
-              <span className="bar-chart__label">{fmtDate(d.date)}</span>
-            </div>
-          );
-        })}
+                {b.isPeak && (
+                  <rect
+                    x={b.bx} y={b.by} width={barW} height={5} rx="4" ry="4"
+                    fill="var(--color-warning)"
+                    style={{ opacity: isDimmed ? 0.2 : 1, pointerEvents: "none", transition: "opacity 0.2s" }}
+                  />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        <div className="bar-chart__labels">
+          {bars.map((b) => (
+            <span
+              key={b.date}
+              className={`bar-chart__label${b.isPeak ? " bar-chart__label--peak" : ""}`}
+              style={{ opacity: hovered && hovered !== b.date ? 0.35 : 1, transition: "opacity 0.2s" }}
+            >
+              {fmtDate(b.date)}
+            </span>
+          ))}
+        </div>
+
+        {tooltip && (
+          <div className="bar-chart__tooltip" style={{ top: tooltip.y, left: tooltip.x }}>
+            {tooltip.label} · {tooltip.count}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -641,6 +731,7 @@ export default function DashboardPage() {
             icon={Ticket}
             accent="var(--color-primary)"
             accentLight="var(--color-primary-light)"
+            secondary
             loading={loading}
             onClick={() => navigate("/admin/pases")}
           />
@@ -650,6 +741,7 @@ export default function DashboardPage() {
             icon={Activity}
             accent="var(--color-info)"
             accentLight="var(--color-info-light)"
+            secondary
             loading={loading}
             onClick={() => navigate("/admin/accesos")}
           />
@@ -659,6 +751,7 @@ export default function DashboardPage() {
             icon={Users}
             accent="var(--color-warning)"
             accentLight="var(--color-warning-light)"
+            muted
             loading={loading}
             onClick={() => navigate("/admin/usuarios")}
           />
@@ -828,9 +921,9 @@ export default function DashboardPage() {
 
       {/* ── Tabla combinada de accesos ── */}
       <section className="dash__section">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <div className="atbl__header">
           <SectionHeader icon={Table2}>Registro de accesos</SectionHeader>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="atbl__actions">
             <button
               onClick={async () => {
                 const res = await exportAccessTableCSV(activeTableFilters);
@@ -841,7 +934,7 @@ export default function DashboardPage() {
                 link.click();
                 URL.revokeObjectURL(link.href);
               }}
-              style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+              className="atbl__export-btn"
             >
               <Download size={13} />
               CSV
@@ -857,7 +950,7 @@ export default function DashboardPage() {
                   link.click();
                   URL.revokeObjectURL(link.href);
                 }}
-                style={{ padding: "6px 10px", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                className="atbl__export-btn"
               >
                 <Download size={13} />
                 PDF
@@ -867,11 +960,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Filtros */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+        <div className="atbl__filters">
           <select
             value={tableFilters.access_type}
             onChange={(e) => { setTableFilters((f) => ({ ...f, access_type: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           >
             <option value="">Todos los tipos</option>
             <option value="qr">QR</option>
@@ -881,7 +974,7 @@ export default function DashboardPage() {
           <select
             value={tableFilters.status}
             onChange={(e) => { setTableFilters((f) => ({ ...f, status: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           >
             <option value="">Todos los estados</option>
             <option value="open">Activo</option>
@@ -893,40 +986,40 @@ export default function DashboardPage() {
             placeholder="Destino"
             value={tableFilters.destination}
             onChange={(e) => { setTableFilters((f) => ({ ...f, destination: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", width: "140px" }}
+            className="atbl__filter-control atbl__filter-control--dest"
           />
 
           <input
             type="date"
             value={tableFilters.date_from}
             onChange={(e) => { setTableFilters((f) => ({ ...f, date_from: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           />
 
           <input
             type="date"
             value={tableFilters.date_to}
             onChange={(e) => { setTableFilters((f) => ({ ...f, date_to: e.target.value })); setTablePage(1); }}
-            style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)" }}
+            className="atbl__filter-control"
           />
 
           {Object.values(tableFilters).some((v) => v !== "") && (
             <button
               onClick={() => { setTableFilters({ access_type: "", status: "", destination: "", date_from: "", date_to: "" }); setTablePage(1); }}
-              style={{ padding: "6px 10px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text-muted)", cursor: "pointer" }}
+              className="atbl__clear-btn"
             >
               Limpiar
             </button>
           )}
         </div>
 
-        <div style={{ overflowX: "auto" }}>
+        <div className="atbl__scroll">
           {loadingTable ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}><Spinner /></div>
+            <div className="atbl__loading"><Spinner /></div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <table className="atbl__table">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                <tr className="atbl__thead-row">
                   {[
                     { label: "ID",        key: "id" },
                     { label: "Visitante", key: "visitor_name" },
@@ -949,7 +1042,7 @@ export default function DashboardPage() {
                           setTableOrdering(isActive && !isDesc ? `-${key}` : key);
                           setTablePage(1);
                         }}
-                        style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: isActive ? "var(--color-text)" : "var(--color-text-muted)", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" }}
+                        className={`atbl__th${isActive ? " atbl__th--active" : ""}`}
                       >
                         {label}{isActive ? (isDesc ? " ↓" : " ↑") : ""}
                       </th>
@@ -960,23 +1053,23 @@ export default function DashboardPage() {
               <tbody>
                 {accessTable?.results?.length ? (
                   accessTable.results.map((row) => (
-                    <tr key={row.id} style={{ borderBottom: "0.5px solid var(--color-border)" }}>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.id}</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 500 }}>{row.visitor_name}</td>
-                      <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{row.plate}</td>
-                      <td style={{ padding: "8px 10px" }}>{row.destination || "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>
-                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.access_type === "qr" ? "#e0f2fe" : "#fef3c7", color: row.access_type === "qr" ? "#0369a1" : "#b45309" }}>
+                    <tr key={row.id} className="atbl__tr">
+                      <td className="atbl__td atbl__td--muted">{row.id}</td>
+                      <td className="atbl__td atbl__td--name">{row.visitor_name}</td>
+                      <td className="atbl__td atbl__td--mono">{row.plate}</td>
+                      <td className="atbl__td">{row.destination || "—"}</td>
+                      <td className="atbl__td">
+                        <span className={`atbl__badge atbl__badge--${row.access_type}`}>
                           {row.access_type === "qr" ? "QR" : "Manual"}
                         </span>
                       </td>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.pass_id || "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>{row.pass_type}</td>
-                      <td style={{ padding: "8px 10px", color: "var(--color-text-muted)" }}>{row.guard}</td>
-                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
-                      <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
-                      <td style={{ padding: "8px 10px" }}>
-                        <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "999px", background: row.status === "open" ? "#dcfce7" : "#f1f5f9", color: row.status === "open" ? "#16a34a" : "#64748b" }}>
+                      <td className="atbl__td atbl__td--muted">{row.pass_id || "—"}</td>
+                      <td className="atbl__td">{row.pass_type}</td>
+                      <td className="atbl__td atbl__td--muted">{row.guard}</td>
+                      <td className="atbl__td atbl__td--nowrap">{row.entry_time ? new Date(row.entry_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td className="atbl__td atbl__td--nowrap">{row.exit_time ? new Date(row.exit_time).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+                      <td className="atbl__td">
+                        <span className={`atbl__badge atbl__badge--${row.status}`}>
                           {row.status === "open" ? "Activo" : "Cerrado"}
                         </span>
                       </td>
@@ -984,7 +1077,7 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={11} style={{ padding: "32px", textAlign: "center", color: "var(--color-text-muted)" }}>
+                    <td colSpan={11} className="atbl__empty">
                       No hay registros.
                     </td>
                   </tr>
@@ -996,11 +1089,11 @@ export default function DashboardPage() {
 
         {/* Paginación */}
         {(accessTable?.next || accessTable?.previous) && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--color-text-muted)" }}>
+          <div className="atbl__pagination">
             <button
               onClick={() => setTablePage((p) => p - 1)}
               disabled={!accessTable?.previous}
-              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.previous ? "pointer" : "default", opacity: accessTable?.previous ? 1 : 0.4 }}
+              className="atbl__page-btn"
             >
               ← Anterior
             </button>
@@ -1008,7 +1101,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setTablePage((p) => p + 1)}
               disabled={!accessTable?.next}
-              style={{ padding: "5px 12px", fontSize: "12px", border: "0.5px solid var(--color-border)", borderRadius: "6px", background: "var(--color-surface)", color: "var(--color-text)", cursor: accessTable?.next ? "pointer" : "default", opacity: accessTable?.next ? 1 : 0.4 }}
+              className="atbl__page-btn"
             >
               Siguiente →
             </button>
