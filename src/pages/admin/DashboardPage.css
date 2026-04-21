@@ -447,6 +447,128 @@
   border-top: 1px solid color-mix(in srgb, var(--color-border) 82%, white 18%);
 }
 
+/* ─── Tabla de accesos (atbl__) ──────────────────────────── */
+.atbl__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.atbl__actions {
+  display: flex;
+  gap: 8px;
+}
+.atbl__export-btn {
+  padding: 6px 10px;
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.atbl__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.atbl__filter-control {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.atbl__filter-control--dest {
+  width: 140px;
+}
+.atbl__clear-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.atbl__scroll {
+  overflow-x: auto;
+}
+.atbl__loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+.atbl__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.atbl__thead-row {
+  border-bottom: 1px solid var(--color-border);
+}
+.atbl__th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.atbl__th--active {
+  color: var(--color-text);
+}
+.atbl__tr {
+  border-bottom: 0.5px solid var(--color-border);
+}
+.atbl__td {
+  padding: 8px 10px;
+}
+.atbl__td--muted  { color: var(--color-text-muted); }
+.atbl__td--name   { font-weight: 500; }
+.atbl__td--mono   { font-family: monospace; }
+.atbl__td--nowrap { white-space: nowrap; }
+.atbl__badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.atbl__badge--qr     { background: var(--color-info-light); color: var(--color-primary); }
+.atbl__badge--manual { background: #fef3c7; color: #b45309; }
+.atbl__badge--open   { background: #dcfce7; color: #16a34a; }
+.atbl__badge--closed { background: #f1f5f9; color: #64748b; }
+.atbl__empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+.atbl__pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.atbl__page-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.atbl__page-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
 .access-summary {
   display: flex;
   flex-direction: column;
